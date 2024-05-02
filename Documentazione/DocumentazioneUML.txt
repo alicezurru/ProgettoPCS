@@ -1,0 +1,48 @@
+@startuml
+package Geometry <<Folder>>{
+
+class Fracture
+{
++ idFrac: unsigned int
++ numVertices: unsigned int 
++ vertices: vector<Vector<3d>>
++ passingTraces: vector<unsigned int>
++ notPassingTraces: vector<unsigned int>
+
+..Non member function ..
++ bool readFractures(string&, vector<Fracture>&)
+
+..TEST FRACTURE..
+
+}
+
+class Trace
+{
++ idTr: unsigned int
++ extremitiesCoord: array<Vector3d,2>
++ fracturesIds: array<unsigned int,2>
++ length: double
++ Tips: array<bool,2>
+
+'+ vector<double> computeArea()
+'+ void gedimInterface(v<v<unsigned int>>&)
+
+
+..Non member function ..
+'void importPolygons(path, polygons)
+..TEST TRACE..
+NOMITEST
+}
+}
+
+package Gedim <<Frame>>{
+}
+note "Gedim is an external library" as GedimN
+GedimN..Gedim
+
+Gedim ..> Fracture::gedimInterface 
+
+Trace "2"--o "many" Fracture : has
+
+
+@enduml
