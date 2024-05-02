@@ -10,6 +10,7 @@ class Fracture
 + notPassingTraces: vector<unsigned int>
 
 ..Non member function ..
++ bool readFractures(string&, vector<Fracture>&)
 
 ..TEST FRACTURE..
 
@@ -21,6 +22,7 @@ class Trace
 + extremitiesCoord: array<Vector3d,2>
 + fracturesIds: array<unsigned int,2>
 + length: double
++ Tips: array<bool,2>
 
 '+ vector<double> computeArea()
 '+ void gedimInterface(v<v<unsigned int>>&)
