@@ -3,15 +3,18 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 using namespace Geometry;
 
-int main()
+int main(int argc, char **argv) //passo la tolleranza
 {
+    double tolInput=stod(argv[1]);
+    double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures("C:/Users/sophi/Desktop/ProgettoPCS/Project/DFN/FR3_data.txt",vec);
+    bool flag=readFractures(path+"./FR3_data.txt",vec, tol);
     //"C:\Users\sophi\Desktop\ProgettoPCS\Project\DFN\FR10_data.txt"
 
     for (Fracture fr : vec){
@@ -22,5 +25,5 @@ int main()
         }
     }
 
-    return 0;
+    return 0;
 }
