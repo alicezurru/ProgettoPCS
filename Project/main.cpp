@@ -14,16 +14,19 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"./FR3_data.txt",vec, tol);
-    //"C:\Users\sophi\Desktop\ProgettoPCS\Project\DFN\FR10_data.txt"
+    bool flag=readFractures("./DFN/FR3_data.txt",vec, tol);
+    if (!flag){ //ci son stati problemi nella lettura file
+        return 1;
+    }
 
-    for (Fracture fr : vec){
+    return 0;
+}
+
+    /*for (Fracture fr : vec){
         cout << "numero fratture " << vec.size() << endl;
         cout << "frattura1 " << " id " << fr.idFrac << " numero vertici " << fr.numVertices;
         for (unsigned int i=0; i<fr.numVertices; i++){
             cout << " vertice " << i << ": " << fr.vertices[i][0] << " " << fr.vertices[i][1] << " " << fr.vertices[i][2] << endl;
         }
-    }
+    }*/
 
-    return 0;
-}

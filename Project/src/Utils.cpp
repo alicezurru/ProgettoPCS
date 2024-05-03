@@ -74,15 +74,9 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
 }
 
 vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte le fratture, trova tutte le tracce e le restituisce in un vettore
-    list<Trace> listTraces;
+    list<Trace> listTraces; //metto prima in una lista per efficienza nell'aggiungere le nuove tracce, poi in un vettore per efficienza nell'accesso casuale
     for (unsigned int i=0; i<fractures.size(); i++){//devo controllare ogni coppia di fratture possibile
         for(unsigned int j=i+1; j<fractures.size(); j++){
-            //controllo se i piani che contengono le due fratture sono parallelli e in quel caso passo alla coppia successiva
-            double d1; //termine noto piano 1
-            double d2;
-            Vector3d coeff1 = findPlaneEquation(fractures[i].vertices, d1); //coefficienti del piano che contengono la frattura 1
-            Vector3d coeff2 = findPlaneEquation(fractures[j].vertices, d2);
-            if((coeff1.cross(coeff2)).squaredNorm()>tol*tol){ //i piani sono paralleli se hanno normali parallele
                 //controllo se i due poligoni sono molto lontani (bounding box) e in quel caso passo alla coppia successiva
                 //prima cerco centro (facendo la media dei vertici) e raggio (massima distanza tra il centro e i vertici) delle bounding box
                 Vector3d centreBB1 = Vector3d::Zero();
@@ -105,20 +99,30 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                 for(unsigned int k2=0; k2<(fractures[j]).numVertices; k2++){
                     radiusBB2=max(radiusBB2,((fractures[j]).vertices[k2]-centreBB2).squaredNorm());
                 }
-                if((radiusBB1+radiusBB2)*(radiusBB1+radiusBB2) > (centreBB1-centreBB2).squaredNorm()){ //vado avanti solo se il controllo della bounding box non è passato (se le due si intersecano)
-                    cout << ":)" << endl;
+                if((radiusBB1+radiusBB2)*(radiusBB1+radiusBB2) > (centreBB1-centreBB2).squaredNorm()){ //vado avanti solo se il controllo della
+//                    bounding box non è passato (se le due probabilmente si intersecano)
+                    //ora vedo se c'è effettivamente intersezione
+                    array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
+                    bool intersection = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol);
+                    if(intersection){
+                        //qua fai il lavoro su posizione dei 4 punti
+                    }
+
+
+
                 }
             }
         }
     }
     //convertire la lista di tracce in vettore
+    //return
 }
-}
+
 
 namespace Algebra{
 //per trovare l'equazione del piano che contiene i vertici di un poligono
 
-Vector3d findPlaneEquation(const vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
+inline Vector3d findPlaneEquation(const vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
     //assumiamo che non ci possano essere 3 punti allineati e che le fratture siano planari
     //calcolo della normale:
     Vector3d v1=points[1]-points[0];
@@ -128,4 +132,86 @@ Vector3d findPlaneEquation(const vector<Vector3d>& points, double& constantTerm)
 
     return n;
 }
+inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol){
+    bool intersection=false;
+    //controllo se i piani che contengono le due fratture sono parallelli (non possono intersecarsi)
+    double d1; //termine noto piano 1
+    double d2;
+    Vector3d coeff1 = findPlaneEquation(f1.vertices, d1); //coefficienti del piano che contengono la frattura 1
+    Vector3d coeff2 = findPlaneEquation(f2.vertices, d2);
+    if((coeff1.cross(coeff2)).squaredNorm()>tol*tol){ //i piani sono paralleli se hanno normali parallele
+        //posizione dei punti del poligono 2 rispetto al piano 1
+        bool positive=false; //per segnalare se il vertice analizzato in questo momento sta "sopra" (true) o "sotto"(false) il piano
+        bool previous=false;
+        if ((f2.vertices[0]).dot(coeff1)+d1>0){
+            previous=true;//vedo se si comincia "sopra" o "sotto"
+        }
+        unsigned int count1=0; //conto quanti vertici stanno dall'altra parte
+        unsigned int firstVertexOtherSide2=0;
+        for (unsigned int i=1; i<f2.numVertices; i++){
+            if ((f2.vertices[i]).dot(coeff1)+d1>0){ //vedo da che parte stanno i vertici
+                positive=true;
+            }
+            else {
+                positive=false;
+            }
+            if (previous!=positive && count1==0){ //si incontra un vertice dall'altra parte per la prima volta
+                firstVertexOtherSide2=i;
+                count1++;
+            }
+            if(previous=positive && count1!=0){ //conto quanti stanno dall'altra parte
+                count1++;
+            }
+
+            if(previous!=positive && count1!=0){
+                break; //non è necessario andare avanti: saranno tutti di nuovo dalla prima parte
+            }
+            previous=positive;
+        }
+        if(count1!=0){ //c'è almeno un vertice dall'altra parte
+            intersection=true;
+        }
+        //ora posizione dei punti del poligono 1 rispetto al piano 2
+        if(intersection){ //solo se già risulta accaduto per il piano 1
+            positive=false;
+            previous=false;
+            if ((f1.vertices[0]).dot(coeff2)+d1>0){
+                previous=true;//vedo se si comincia "sopra" o "sotto"
+            }
+            unsigned int count2=0;
+            unsigned int firstVertexOtherSide1=0;
+            for (unsigned int i=1; i<f2.numVertices; i++){
+                if ((f2.vertices[i]).dot(coeff1)+d1>0){ //vedo da che parte stanno i vertici
+                    positive=true;
+                }
+                else {
+                    positive=false;
+                }
+                if (previous!=positive && count2==0){ //si incontra un vertice dall'altra parte per la prima volta
+                    firstVertexOtherSide1=i;
+                    count2++;
+                }
+                if(previous=positive && count2!=0){ //conto quanti stanno dall'altra parte
+                    count2++;
+                }
+                if(previous!=positive && count2!=0){
+                    break; //non è necessario andare avanti: saranno tutti di nuovo dalla prima parte
+                }
+                previous=positive;
+            }
+            if(count2!=0){ //c'è intersezione
+                    //CONTINUA QUA: ORA INDIVIDUA I LATI E FAI L'INTERSEZIONE LATO PIANO
+            }
+            else{
+                intersection=false;
+            }
+        }
+
+        }
+        return intersection;
 }
+
+}
+
+
+
