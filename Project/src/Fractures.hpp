@@ -1,7 +1,7 @@
-//#ifndef Fractures_H
-//#define Fractures_H
+#ifndef Fractures_H
+#define Fractures_H
 
-#pragma once
+
 
 #include <Eigen/Eigen>
 #include <vector>
@@ -13,21 +13,21 @@ using namespace Eigen;
 
 namespace Geometry{
 struct Fracture{
-    unsigned int idFrac;
+    int idFrac;
     unsigned int numVertices;
     vector <Vector3d> vertices={}; //vettore con le coordinate dei vertici della frattura
     vector <unsigned int> passingTraces={}; //vettore con gli id delle tracce passanti per la frattura corrente
     vector <unsigned int> notPassingTraces={};
 
     Fracture()=default; //default
-    //Fracture(int num); //overloading del costruttore nel caso in cui voglia il valore Null (per fratture con problemi)
-    Fracture(int num){
+     //overloading del costruttore nel caso in cui voglia il valore Null (per fratture con problemi)
+    /*Fracture(int num){
         if (num != -1)
             cerr << "errore nella creazione della frattura" << endl;
         else{
-            idFrac=NULL;
+            idFrac=-1;
         }
-    }
+    }*/
 
 };
 
@@ -42,4 +42,4 @@ struct Trace{
 
 }
 
-//#endif
+#endif
