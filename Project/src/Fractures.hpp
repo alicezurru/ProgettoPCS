@@ -13,7 +13,7 @@ using namespace Eigen;
 
 namespace Geometry{
 struct Fracture{
-    int idFrac;
+    int idFrac; //non unisgned int così posso usare dei valori sentinella (-1) per indicare fratture con problemi
     unsigned int numVertices;
     vector <Vector3d> vertices={}; //vettore con le coordinate dei vertici della frattura
     vector <unsigned int> passingTraces={}; //vettore con gli id delle tracce passanti per la frattura corrente

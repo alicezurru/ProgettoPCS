@@ -8,6 +8,7 @@
 #include <Eigen/Eigen>
 #include <functional> //per le lambda function
 #include <list>
+#include <cassert> //per mergesort
 
 
 using namespace std;
@@ -70,6 +71,7 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
         }
         vec.push_back(frac);
     }
+    ifstr.close();
     return true;
 }
 
@@ -116,9 +118,50 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                 }
             }
         }
-    }
     //convertire la lista di tracce in vettore
     //return
+    }
+
+void printGlobalResults (const string& fileName, const vector<Trace>& traces){ //primo file di ouput, con le informazioni sulle tracce
+    ofstream ofstr(fileName); //se il file non esiste, lo crea
+    ofstr << "# Number of Traces" << endl;
+    ofstr << traces.size() << endl;
+    for (Trace tr:traces){
+        ofstr << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
+        ofstr << tr.idTr << "; " << tr.fracturesIds[0] << "; " << tr.fracturesIds[1] << "; " << (tr.extremitiesCoord[0])[0] << "; "
+              << (tr.extremitiesCoord[0])[1] << "; " << (tr.extremitiesCoord[0])[2] << "; " << (tr.extremitiesCoord[1])[0] << "; "
+              << (tr.extremitiesCoord[1])[1] << "; " << (tr.extremitiesCoord[1])[2] << endl;
+    }
+    ofstr.close();
+}
+
+void printLocalResults (const string& fileName,const vector<Fracture>&fractures, const vector<Trace>& traces){
+    //secondo file di ouput, con le informazioni sulle fratture e sulle tracce corrispondenti
+    ofstream ofstr(fileName);
+    for (Fracture fr:fractures){
+        if (fr.idFrac!=-1){ //non gestisco quelle eventualmente problematiche
+            ofstr << "# FractureId; NumTraces" << endl;
+            ofstr << fr.idFrac << "; " << (fr.passingTraces.size())+(fr.notPassingTraces.size()) << endl;
+            detail::mergesort(fr.passingTraces, traces, 0, fr.passingTraces.size()-1); //ordino le tracce passanti per lunghezza decrescente
+            //??size-1 è giusto??
+            detail::mergesort(fr.notPassingTraces, traces, 0, fr.notPassingTraces.size()-1); //ordino le tracce non passanti per lunghezza decrescente
+            for (unsigned int trId:fr.passingTraces){
+                if(traces[trId].length >0){ //non gestisco quelle eventualmente problematiche
+                    ofstr << "# TraceId; Tips; Length" << endl;
+                    ofstr << trId << "; " << "false; " << traces[trId].length << endl; //sto stampando prima tutte quelle passanti, quindi avranno tutte tips=false
+                }
+            }
+            for (unsigned int trId:fr.notPassingTraces){
+                if(traces[trId].length >0){ //non gestisco quelle eventualmente problematiche
+                    ofstr << "# TraceId; Tips; Length" << endl;
+                    ofstr << trId << "; " << "true; " << traces[trId].length << endl; //sto stampando prima tutte quelle non passanti, quindi avranno tutte tips=true
+                }
+            }
+        }
+
+    }
+    ofstr.close();
+}
 }
 
 
@@ -230,6 +273,91 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
 }
 
 }
+
+/*template<typename T>
+void print(const std::vector<T>& vs)
+{
+    for (auto & v : vs)
+        std::cout << v << " ";
+    std::cout << std::endl;
+}*/
+
+
+namespace detail { //per ordinare
+//modifico la funzione già esistente di mergesort in modo da far ordinare le tracce per lunghezza
+
+//template<typename T>
+void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t center, size_t right)
+//devo dare in input non solo il vettore degli id delle tracce (passanti o non passanti) che è quello che verrà ordinato,
+//ma anche il vettore contenente tutte le tracce in modo da poter risalire dall'id alla lunghezza della traccia
+{
+    assert(right >= left);
+    size_t i = left;
+    size_t j = center+1;
+    size_t k = 0;
+
+    vector<unsigned int> tmp(right - left + 1);
+
+    while (i <= center && j <= right) {
+        if (traces[vecIdTraces[i]].length >= traces[vecIdTraces[j]].length) { //cambio <= con >= per ordinare in modo decrescente e invece di prendere solo l'elemento ne guardo la lunghezza
+            assert(k < tmp.size());
+            assert(i < vecIdTraces.size());
+            tmp[k++] = vecIdTraces[i++];
+        }
+        else {
+            assert(k < tmp.size());
+            assert(j < vecIdTraces.size());
+            tmp[k++] = vecIdTraces[j++];
+        }
+    }
+
+    while (i <= center) {
+        assert(k < tmp.size());
+        assert(i < vecIdTraces.size());
+        tmp[k++] = vecIdTraces[i++];
+    }
+
+    while (j <= right) {
+        assert(k < tmp.size());
+        assert(j < vecIdTraces.size());
+        tmp[k++] = vecIdTraces[j++];
+    }
+
+    assert(k == (right - left + 1));
+
+    for (size_t h = left; h <= right; h++)
+        vecIdTraces[h] = tmp[h-left];
+}
+
+//template<typename T>
+void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t right)
+{
+    assert(left <= vecIdTraces.size());
+    assert(right <= vecIdTraces.size());
+
+    if (left < right) {
+        size_t center = (left + right)/2;
+        mergesort(vecIdTraces, traces, left, center);
+        mergesort(vecIdTraces, traces, center+1, right);
+        /* Ipotesi induttiva: [left, center] e
+         * [center+1, right] sono ordinati.
+         * Assumo merge() corretta */
+        merge(vecIdTraces, traces, left, center, right);
+        /* Qui [left,right] Ã¨ ordinato */
+    }
+    /* Caso base: il vettore di un solo elemento Ã¨ ordinato */
+}
+
+} // namespace detail
+
+/*template<typename T>
+void
+mergesort(std::vector<T>& data)
+{
+    detail::mergesort(data, 0, data.size()-1);
+}*/ //-> cos'é?
+
+
 
 
 
