@@ -19,6 +19,17 @@ int main(int argc, char **argv) //passo la tolleranza
         return 1;
     }
 
+
+    //prova findTraces
+    vector<Trace> vecTraces=findTraces(vec,tol);
+    cout << "Numero tracce: " << vecTraces.size() << endl;
+    for (Trace tr : vecTraces){
+        cout << "Traccia: " << " id " << tr.idTr << ", Frattura1 "<<tr.fracturesIds[0]<<", Frattura2 "<<tr.fracturesIds[1]<<endl;
+        cout<<tr.Tips[0]<<tr.Tips[1]<<endl;
+
+    }
+
+
     //prova mergesort
     /*vector<Trace> vecProvaMS;
     Trace t1;

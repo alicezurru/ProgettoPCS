@@ -107,19 +107,135 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                     //ora vedo se c'è effettivamente intersezione
                     array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
                     bool intersection = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol);
+                    cout<<intPoints[0][0]<<intPoints[0][1]<<intPoints[0][2]<<endl;
+                    cout<<intPoints[1][0]<<intPoints[1][1]<<intPoints[1][2]<<endl;
+                    cout<<intPoints[2][0]<<intPoints[2][1]<<intPoints[2][2]<<endl;
+                    cout<<intPoints[3][0]<<intPoints[3][1]<<intPoints[3][2]<<endl;
                     if(intersection){
                         //ora stabiliamo tra i 4 potenziali chi sono i punti di intersezione
-                        //QUAAAA
-
+                        array<Vector3d,2> extremities; //qui salverò i due punti estremi della traccia
+                        array<bool,2> tips = {true,true}; //se resta così è non passante per entrambi
+                        //vedo la posizione reciproca dei punti per stabilire i due più interni: saranno gli estremi della traccia
+                        //inoltre così stabilisco anche che tipo di traccia è:
+                        //se i due interni sono dello stesso poligono, la traccia è passante per quel poligono
+                        //se sono uno di un poligono e uno di un altro è non passante per entrambi
+                        //se inoltre i punti interni e esterni coincidono a due a due è passante per entrambi
+                        //ricordando che in intPoints ci sono prima due punti del primo poligono (0,1), poi due punti del secondo poligono (2,3)
+                        if(((intPoints[0]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[1]-intPoints[3]).squaredNorm()<tol*tol)||
+                            ((intPoints[1]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[0]-intPoints[3]).squaredNorm()<tol*tol)){
+                            tips={false,false};
+                             cout<<"ok"<<endl;
+                        }//passante per entrambi se i punti coincidono
+                        if(tips[0]){
+                            //se non è passante per entrambi, vedo la posizione reciproca con i prodotti scalari:
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>0){ //confronto posizione di 2 rispetto a 0
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>0){//2 rispetto a 1
+                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){//3 rispetto a 2
+                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){//3 rispetto a 0
+                                            //0321
+                                            extremities = {intPoints[3],intPoints[2]};
+                                            tips[1]=false;
+                                        }
+                                        else{
+                                            //3021
+                                            extremities = {intPoints[0],intPoints[2]};
+                                        }
+                                    }
+                                    else{
+                                        if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){//3 rispetto a 1
+                                            //0231
+                                            extremities = {intPoints[3],intPoints[2]};
+                                            tips[1]=false;
+                                        }
+                                        else{
+                                            //0213
+                                            extremities = {intPoints[1],intPoints[2]};
+                                        }
+                                    }
+                                }
+                                else{
+                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){//3 rispetto a 1
+                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){//3 rispetto a 0
+                                            //0312
+                                            extremities = {intPoints[3],intPoints[1]};
+                                        }
+                                        else{
+                                            //3012
+                                            extremities = {intPoints[0],intPoints[1]};
+                                            tips[0]=false;
+                                        }
+                                    }
+                                    else{
+                                        if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){//3 rispetto a 2
+                                            //0132
+                                            extremities = {intPoints[3],intPoints[1]};
+                                        }
+                                        else{
+                                            //0123
+                                            extremities = {intPoints[1],intPoints[2]};
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){ //3 rispetto a 0
+                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){ //3 rispetto a 1
+                                        //2031
+                                        extremities = {intPoints[3],intPoints[0]};
+                                    }
+                                    else{
+                                        //2013
+                                        extremities = {intPoints[0],intPoints[1]};
+                                        tips[1]=false;
+                                    }
+                                }
+                                else{
+                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){ //3 rispetto a 2
+                                        //2301
+                                        extremities = {intPoints[3],intPoints[0]};
+                                    }
+                                    else{
+                                        //3201
+                                        extremities = {intPoints[0],intPoints[2]};
+                                    }
+                                }
+                            }
+                        }
+                        //calcolo la lunghezza ed escludo il caso in cui sia un unico punto a toccare il poligono
+                        double len =(extremities[0]-extremities[1]).norm();
+                        if (len>tol){
+                            //creo finalmente la traccia
+                            Trace tr;
+                            tr.idTr=listTraces.size();
+                            tr.extremitiesCoord = extremities;
+                            tr.fracturesIds = {fractures[i].idFrac,fractures[j].idFrac};
+                            tr.length=len;
+                            tr.Tips=tips;
+                            listTraces.push_back(tr);//inserisco la traccia ora creata nella lista
+                            if(tips[0]){ //e nel vettore corrispondente nella frattura
+                                fractures[i].notPassingTraces.push_back(tr.idTr);
+                            }
+                            else{
+                                fractures[i].passingTraces.push_back(tr.idTr);
+                            }
+                            if(tips[1]){
+                                fractures[j].notPassingTraces.push_back(tr.idTr);
+                            }
+                            else{
+                                fractures[j].passingTraces.push_back(tr.idTr);
+                            }//vedi poi se c'è modo migliore per farlo
+                        }
                     }
-
-
-
                 }
             }
         }
-    //convertire la lista di tracce in vettore
-    //return
+    //ora ho una lista di tracce: popolo il vettore
+        vectorTraces.reserve(listTraces.size());
+        for(Trace tr:listTraces){
+            vectorTraces.push_back(tr);
+        }
+
+        return vectorTraces;
     }
 
 void printGlobalResults (const string& fileName, const vector<Trace>& traces){ //primo file di ouput, con le informazioni sulle tracce
@@ -135,7 +251,7 @@ void printGlobalResults (const string& fileName, const vector<Trace>& traces){ /
     ofstr.close();
 }
 
-void printLocalResults (const string& fileName,const vector<Fracture>&fractures, const vector<Trace>& traces){
+void printLocalResults (const string& fileName,const vector<Fracture>& fractures, const vector<Trace>& traces){
     //secondo file di ouput, con le informazioni sulle fratture e sulle tracce corrispondenti
     ofstream ofstr(fileName);
     for (Fracture fr:fractures){
@@ -143,7 +259,7 @@ void printLocalResults (const string& fileName,const vector<Fracture>&fractures,
             ofstr << "# FractureId; NumTraces" << endl;
             ofstr << fr.idFrac << "; " << (fr.passingTraces.size())+(fr.notPassingTraces.size()) << endl;
             detail::mergesort(fr.passingTraces, traces, 0, fr.passingTraces.size()-1); //ordino le tracce passanti per lunghezza decrescente
-            //??size-1 è giusto??
+            //??size-1 è giusto??  si:)
             detail::mergesort(fr.notPassingTraces, traces, 0, fr.notPassingTraces.size()-1); //ordino le tracce non passanti per lunghezza decrescente
             for (unsigned int trId:fr.passingTraces){
                 if(traces[trId].length >0){ //non gestisco quelle eventualmente problematiche
@@ -166,8 +282,8 @@ void printLocalResults (const string& fileName,const vector<Fracture>&fractures,
 
 
 namespace Algebra{
-//per trovare l'equazione del piano che contiene i vertici di un poligono
 
+//per trovare l'equazione del piano che contiene i vertici di un poligono
 inline Vector3d findPlaneEquation(const vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
     //assumiamo che non ci possano essere 3 punti allineati e che le fratture siano planari
     //calcolo della normale:
@@ -257,11 +373,11 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
             }
             if(count2!=0){ //c'è intersezione
                 //ora individuo i punti di intersezione
-                intPoints[0]=intersectionPlaneLine(coeff2, d2,f1.vertices[firstVertexOtherSide1-1],f1.vertices[firstVertexOtherSide1]);
-                intPoints[1]=intersectionPlaneLine(coeff2, d2,f1.vertices[firstVertexOtherSide1+count2-1],f1.vertices[firstVertexOtherSide1+count2]);
+                intPoints[0]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1-1)%f1.numVertices],f1.vertices[firstVertexOtherSide1]);
+                intPoints[1]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1+count2-1)%f1.numVertices],f1.vertices[(firstVertexOtherSide1+count2)%f1.numVertices]);
                 //i primi due punti sono del poligono 1, i successivi 2 del poligono 2
-                intPoints[2]=intersectionPlaneLine(coeff1, d1,f2.vertices[firstVertexOtherSide2-1],f2.vertices[firstVertexOtherSide2]);
-                intPoints[3]=intersectionPlaneLine(coeff1, d1,f2.vertices[firstVertexOtherSide2+count1-1],f2.vertices[firstVertexOtherSide2+count1]);
+                intPoints[2]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2-1)%f2.numVertices],f2.vertices[firstVertexOtherSide2]);
+                intPoints[3]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2+count1-1)%f2.numVertices],f2.vertices[(firstVertexOtherSide2+count1)%f2.numVertices]);
             }
             else{
                 intersection=false;

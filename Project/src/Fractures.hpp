@@ -35,7 +35,7 @@ struct Fracture{
 struct Trace{
     unsigned int idTr;
     array <Vector3d, 2> extremitiesCoord={}; //array delle coordinate dei punti estremi della traccia
-    array <unsigned int, 2> fracturesIds={}; //array degli id delle due fratture che formano la traccia
+    array <int, 2> fracturesIds={}; //array degli id delle due fratture che formano la traccia
     array<bool,2> Tips={}; //memorizza se la traccia è passante (F) o no (V) in ognuna delle due fratture coinvolte
     double length;
 };
