@@ -15,6 +15,7 @@ using namespace std;
 using namespace Eigen;
 using namespace Algebra;
 
+
 namespace Geometry{
 bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
     ifstream ifstr(fileName);
@@ -72,6 +73,7 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
         vec.push_back(frac);
     }
     ifstr.close();
+
     return true;
 }
 
@@ -107,10 +109,6 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                     //ora vedo se c'è effettivamente intersezione
                     array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
                     bool intersection = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol);
-                    cout<<intPoints[0][0]<<intPoints[0][1]<<intPoints[0][2]<<endl;
-                    cout<<intPoints[1][0]<<intPoints[1][1]<<intPoints[1][2]<<endl;
-                    cout<<intPoints[2][0]<<intPoints[2][1]<<intPoints[2][2]<<endl;
-                    cout<<intPoints[3][0]<<intPoints[3][1]<<intPoints[3][2]<<endl;
                     if(intersection){
                         //ora stabiliamo tra i 4 potenziali chi sono i punti di intersezione
                         array<Vector3d,2> extremities; //qui salverò i due punti estremi della traccia
@@ -124,7 +122,7 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                         if(((intPoints[0]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[1]-intPoints[3]).squaredNorm()<tol*tol)||
                             ((intPoints[1]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[0]-intPoints[3]).squaredNorm()<tol*tol)){
                             tips={false,false};
-                             cout<<"ok"<<endl;
+                            extremities = {intPoints[0],intPoints[1]};//di uno dei due poligoni
                         }//passante per entrambi se i punti coincidono
                         if(tips[0]){
                             //se non è passante per entrambi, vedo la posizione reciproca con i prodotti scalari:
@@ -231,18 +229,18 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
         }
     //ora ho una lista di tracce: popolo il vettore
         vectorTraces.reserve(listTraces.size());
-        for(Trace tr:listTraces){
+        for(Trace& tr:listTraces){
             vectorTraces.push_back(tr);
         }
 
         return vectorTraces;
     }
 
-void printGlobalResults (const string& fileName, const vector<Trace>& traces){ //primo file di ouput, con le informazioni sulle tracce
+void printGlobalResults (const string& fileName, vector<Trace>& traces){ //primo file di ouput, con le informazioni sulle tracce
     ofstream ofstr(fileName); //se il file non esiste, lo crea
     ofstr << "# Number of Traces" << endl;
     ofstr << traces.size() << endl;
-    for (Trace tr:traces){
+    for (Trace& tr:traces){
         ofstr << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
         ofstr << tr.idTr << "; " << tr.fracturesIds[0] << "; " << tr.fracturesIds[1] << "; " << (tr.extremitiesCoord[0])[0] << "; "
               << (tr.extremitiesCoord[0])[1] << "; " << (tr.extremitiesCoord[0])[2] << "; " << (tr.extremitiesCoord[1])[0] << "; "
@@ -284,7 +282,7 @@ void printLocalResults (const string& fileName,const vector<Fracture>& fractures
 namespace Algebra{
 
 //per trovare l'equazione del piano che contiene i vertici di un poligono
-inline Vector3d findPlaneEquation(const vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
+inline Vector3d findPlaneEquation(vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
     //assumiamo che non ci possano essere 3 punti allineati e che le fratture siano planari
     //calcolo della normale:
     Vector3d v1=points[1]-points[0];
@@ -309,6 +307,7 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
     //controllo se i piani che contengono le due fratture sono parallelli (non possono intersecarsi)
     double d1; //termine noto piano 1
     double d2;
+
     Vector3d coeff1 = findPlaneEquation(f1.vertices, d1); //coefficienti del piano che contengono la frattura 1
     Vector3d coeff2 = findPlaneEquation(f2.vertices, d2);
     if((coeff1.cross(coeff2)).squaredNorm()>tol*tol){ //i piani sono paralleli se hanno normali parallele
@@ -329,16 +328,18 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
             }
             if((previous!=positive) && (count1!=0)){
                 break; //non è necessario andare avanti: saranno tutti di nuovo dalla prima parte
+
             }
             if ((previous!=positive) && (count1==0)){ //si incontra un vertice dall'altra parte per la prima volta
                 firstVertexOtherSide2=i;
                 count1++;
             }
-            if((previous=positive) && (count1!=0)){ //conto quanti stanno dall'altra parte
+            if((previous==positive) && (count1!=0)){ //conto quanti stanno dall'altra parte
                 count1++;
             }
 
             previous=positive;
+
         }
         if(count1!=0){ //c'è almeno un vertice dall'altra parte
             intersection=true;
@@ -346,13 +347,13 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
         //ora posizione dei punti del poligono 1 rispetto al piano 2
         if(intersection){ //solo se già risulta accaduto per il piano 1
             previous=false;
-            if ((f1.vertices[0]).dot(coeff2)+d1>0){
+            if ((f1.vertices[0]).dot(coeff2)+d2>0){
                 previous=true;//vedo se si comincia "sopra" o "sotto"
             }
             unsigned int count2=0;
             unsigned int firstVertexOtherSide1=0;
             for (unsigned int i=1; i<f2.numVertices; i++){
-                if ((f2.vertices[i]).dot(coeff1)+d1>0){ //vedo da che parte stanno i vertici
+                if ((f1.vertices[i]).dot(coeff2)+d2>0){ //vedo da che parte stanno i vertici
                     positive=true;
                 }
                 else {
@@ -365,18 +366,19 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
                     firstVertexOtherSide1=i;
                     count2++;
                 }
-                if((previous=positive) && (count2!=0)){ //conto quanti stanno dall'altra parte
+                if((previous==positive) && (count2!=0)){ //conto quanti stanno dall'altra parte
                     count2++;
                 }
 
                 previous=positive;
             }
+
             if(count2!=0){ //c'è intersezione
                 //ora individuo i punti di intersezione
-                intPoints[0]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1-1)%f1.numVertices],f1.vertices[firstVertexOtherSide1]);
+                intPoints[0]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1-1)],f1.vertices[firstVertexOtherSide1]);
                 intPoints[1]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1+count2-1)%f1.numVertices],f1.vertices[(firstVertexOtherSide1+count2)%f1.numVertices]);
                 //i primi due punti sono del poligono 1, i successivi 2 del poligono 2
-                intPoints[2]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2-1)%f2.numVertices],f2.vertices[firstVertexOtherSide2]);
+                intPoints[2]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2-1)],f2.vertices[firstVertexOtherSide2]);
                 intPoints[3]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2+count1-1)%f2.numVertices],f2.vertices[(firstVertexOtherSide2+count1)%f2.numVertices]);
             }
             else{

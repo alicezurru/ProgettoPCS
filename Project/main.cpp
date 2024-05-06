@@ -10,24 +10,27 @@ using namespace Geometry;
 
 int main(int argc, char **argv) //passo la tolleranza
 {
+
     double tolInput=stod(argv[1]);
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures("./DFN/FR3_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR10_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
-
+    vector<Trace> vecTraces=findTraces(vec,tol);
+    printGlobalResults("results", vecTraces);
+    //printLocalResults("lresults",vec,vecTraces); //errore?
 
     //prova findTraces
-    vector<Trace> vecTraces=findTraces(vec,tol);
+    /*vector<Trace> vecTraces=findTraces(vec,tol);
     cout << "Numero tracce: " << vecTraces.size() << endl;
-    for (Trace tr : vecTraces){
+    for (Trace& tr : vecTraces){
         cout << "Traccia: " << " id " << tr.idTr << ", Frattura1 "<<tr.fracturesIds[0]<<", Frattura2 "<<tr.fracturesIds[1]<<endl;
         cout<<tr.Tips[0]<<tr.Tips[1]<<endl;
 
-    }
+    }*/
 
 
     //prova mergesort
@@ -56,7 +59,6 @@ int main(int argc, char **argv) //passo la tolleranza
     detail::mergesort(idProvaMS, vecProvaMS, 0, 4);
     for(unsigned int i=0; i<5; i++)
         cout << idProvaMS[i] << endl;*/
-
 
     return 0;
 }
