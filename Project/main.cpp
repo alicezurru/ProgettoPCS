@@ -21,8 +21,7 @@ int main(int argc, char **argv) //passo la tolleranza
     }
     vector<Trace> vecTraces=findTraces(vec,tol);
     //printGlobalResults("results", vecTraces);
-    //cout << vec[2].notPassingTraces.size() << endl;
-    //printLocalResults("lresults",vec,vecTraces); //errore?
+    //printLocalResults("lresults",vec,vecTraces);
 
     //prova findTraces
     /*vector<Trace> vecTraces=findTraces(vec,tol);
@@ -35,7 +34,7 @@ int main(int argc, char **argv) //passo la tolleranza
 
 
     //prova mergesort
-    vector<Trace> vecProvaMS;
+    /*vector<Trace> vecProvaMS;
     Trace t1;
     t1.idTr=0;
     t1.length=3.0;
@@ -56,10 +55,14 @@ int main(int argc, char **argv) //passo la tolleranza
     vecProvaMS.push_back(t2);
     vecProvaMS.push_back(t3);
     vecProvaMS.push_back(t4);
-    vecProvaMS.push_back(t5);
+    vecProvaMS.push_back(t5);*/
     /*detail::mergesort(idProvaMS, vecProvaMS, 0, 4);
     for(unsigned int i=0; i<5; i++)
         cout << idProvaMS[i] << endl;*/
+
+    /*vector<Vector3d> points = {Vector3d(1.0, 2.5, -0.5), Vector3d(2.0, -1.0, 0.0), Vector3d(0.0, 2.0, 1.0)};
+    double constantTerm=0;
+    Vector3d n = Algebra::findPlaneEquation(points, constantTerm);*/
 
     return 0;
 }

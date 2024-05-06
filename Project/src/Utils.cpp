@@ -450,12 +450,10 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
     assert(left <= vecIdTraces.size());
     assert(right <= vecIdTraces.size());
 
-    cout << "mergesort ha passato gli assert questa volta" << endl; //DA TOGLIERE
-
     if (left < right) {
         size_t center = (left + right)/2;
         mergesort(vecIdTraces, traces, left, center);
-        mergesort(vecIdTraces, traces, center+1, right); //POTREBBE DARE PROBLEMI center+1? NO al massimo raggiunge vecIDTRaces.size()
+        mergesort(vecIdTraces, traces, center+1, right);
         /* Ipotesi induttiva: [left, center] e
          * [center+1, right] sono ordinati.
          * Assumo merge() corretta */
@@ -470,7 +468,9 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
 
 void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 {
-    detail::mergesort(data, traces, 0, data.size()-1); //POTREBBE DAR PROBLEMI SE data.size()=0? NO (comunque nel secondo assert avrei -1<=0)
+    if (data.size()>0){ //va aggiunto il controllo perché se data.size()=0 avrei come right -1 (ma size_t non può essere negativo)
+        detail::mergesort(data, traces, 0, data.size()-1);
+    }
 }
 
 
