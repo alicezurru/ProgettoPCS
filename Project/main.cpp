@@ -15,12 +15,13 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR10_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
     vector<Trace> vecTraces=findTraces(vec,tol);
-    printGlobalResults("results", vecTraces);
+    //printGlobalResults("results", vecTraces);
+    //cout << vec[2].notPassingTraces.size() << endl;
     //printLocalResults("lresults",vec,vecTraces); //errore?
 
     //prova findTraces
@@ -34,7 +35,7 @@ int main(int argc, char **argv) //passo la tolleranza
 
 
     //prova mergesort
-    /*vector<Trace> vecProvaMS;
+    vector<Trace> vecProvaMS;
     Trace t1;
     t1.idTr=0;
     t1.length=3.0;
@@ -56,7 +57,7 @@ int main(int argc, char **argv) //passo la tolleranza
     vecProvaMS.push_back(t3);
     vecProvaMS.push_back(t4);
     vecProvaMS.push_back(t5);
-    detail::mergesort(idProvaMS, vecProvaMS, 0, 4);
+    /*detail::mergesort(idProvaMS, vecProvaMS, 0, 4);
     for(unsigned int i=0; i<5; i++)
         cout << idProvaMS[i] << endl;*/
 

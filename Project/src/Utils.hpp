@@ -11,7 +11,7 @@ using namespace Geometry;
 
 namespace Geometry{
 bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);
-vector<Trace> findTraces(vector<Fracture> fractures, double tol);
+vector<Trace> findTraces(vector<Fracture>& fractures, double tol);
 void printGlobalResults (const string& fileName, vector<Trace>& traces);
 void printLocalResults (const string& fileName,const vector<Fracture>&fractures, const vector<Trace>& traces);
 }
@@ -26,5 +26,6 @@ namespace detail{
 void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t center, size_t right);
 void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t right);
 }
+void mergesort(vector<unsigned int>& data, const vector<Trace>& traces);
 
 #endif

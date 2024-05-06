@@ -57,7 +57,7 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
         }
 
         for (unsigned int k=0; k<frac.numVertices-1; k++){ //controllo che non ci siano lati di lunghezza nulla.
-            //In questo caso tolgo la frattura e metto nel vettore una frattura con id NULL
+            //In questo caso tolgo la frattura e metto nel vettore una frattura con id -1
             Vector3d edge = (frac.vertices)[k]-(frac.vertices)[k+1]; //differenza tra due vertici consecutivi
             if (edge[0]*edge[0]+edge[1]*edge[1]+edge[2]*edge[2]<tol*tol){//distanza al quadrato in modo da non dover valutare la radice quadrata
                 cerr << "la frattura " << frac.idFrac << " ha lati di lunghezza nulla" << endl;
@@ -73,11 +73,10 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
         vec.push_back(frac);
     }
     ifstr.close();
-
     return true;
 }
 
-vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte le fratture, trova tutte le tracce e le restituisce in un vettore
+vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte le fratture, trova tutte le tracce e le restituisce in un vettore
     list<Trace> listTraces; //metto prima in una lista per efficienza nell'aggiungere le nuove tracce, poi in un vettore per efficienza nell'accesso casuale
     vector<Trace> vectorTraces;
     for (unsigned int i=0; i<fractures.size(); i++){//devo controllare ogni coppia di fratture possibile
@@ -215,12 +214,15 @@ vector<Trace> findTraces(vector<Fracture> fractures, double tol){ //date tutte l
                             }
                             else{
                                 fractures[i].passingTraces.push_back(tr.idTr);
+
                             }
                             if(tips[1]){
                                 fractures[j].notPassingTraces.push_back(tr.idTr);
+
                             }
                             else{
                                 fractures[j].passingTraces.push_back(tr.idTr);
+
                             }//vedi poi se c'è modo migliore per farlo
                         }
                     }
@@ -256,23 +258,18 @@ void printLocalResults (const string& fileName,const vector<Fracture>& fractures
         if (fr.idFrac!=-1){ //non gestisco quelle eventualmente problematiche
             ofstr << "# FractureId; NumTraces" << endl;
             ofstr << fr.idFrac << "; " << (fr.passingTraces.size())+(fr.notPassingTraces.size()) << endl;
-            detail::mergesort(fr.passingTraces, traces, 0, fr.passingTraces.size()-1); //ordino le tracce passanti per lunghezza decrescente
-            //??size-1 è giusto??  si:)
-            detail::mergesort(fr.notPassingTraces, traces, 0, fr.notPassingTraces.size()-1); //ordino le tracce non passanti per lunghezza decrescente
+            mergesort(fr.passingTraces, traces); //ordino le tracce passanti per lunghezza decrescente (chiamo quella fuori dal namespace details così da ordinarlo tutto)
+            mergesort(fr.notPassingTraces, traces); //ordino le tracce non passanti per lunghezza decrescente
             for (unsigned int trId:fr.passingTraces){
-                if(traces[trId].length >0){ //non gestisco quelle eventualmente problematiche
-                    ofstr << "# TraceId; Tips; Length" << endl;
-                    ofstr << trId << "; " << "false; " << traces[trId].length << endl; //sto stampando prima tutte quelle passanti, quindi avranno tutte tips=false
-                }
+                ofstr << "# TraceId; Tips; Length" << endl;
+                ofstr << trId << "; " << "false; " << traces[trId].length << endl; //sto stampando prima tutte quelle passanti, quindi avranno tutte tips=false
+
             }
             for (unsigned int trId:fr.notPassingTraces){
-                if(traces[trId].length >0){ //non gestisco quelle eventualmente problematiche
-                    ofstr << "# TraceId; Tips; Length" << endl;
-                    ofstr << trId << "; " << "true; " << traces[trId].length << endl; //sto stampando prima tutte quelle non passanti, quindi avranno tutte tips=true
-                }
+                ofstr << "# TraceId; Tips; Length" << endl;
+                ofstr << trId << "; " << "true; " << traces[trId].length << endl; //sto stampando prima tutte quelle non passanti, quindi avranno tutte tips=true
             }
         }
-
     }
     ofstr.close();
 }
@@ -352,7 +349,7 @@ inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>
             }
             unsigned int count2=0;
             unsigned int firstVertexOtherSide1=0;
-            for (unsigned int i=1; i<f2.numVertices; i++){
+            for (unsigned int i=1; i<f1.numVertices; i++){ //C'ERA UN ERRORE (f2.numVertices invece di f1)
                 if ((f1.vertices[i]).dot(coeff2)+d2>0){ //vedo da che parte stanno i vertici
                     positive=true;
                 }
@@ -453,10 +450,12 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
     assert(left <= vecIdTraces.size());
     assert(right <= vecIdTraces.size());
 
+    cout << "mergesort ha passato gli assert questa volta" << endl; //DA TOGLIERE
+
     if (left < right) {
         size_t center = (left + right)/2;
         mergesort(vecIdTraces, traces, left, center);
-        mergesort(vecIdTraces, traces, center+1, right);
+        mergesort(vecIdTraces, traces, center+1, right); //POTREBBE DARE PROBLEMI center+1? NO al massimo raggiunge vecIDTRaces.size()
         /* Ipotesi induttiva: [left, center] e
          * [center+1, right] sono ordinati.
          * Assumo merge() corretta */
@@ -468,12 +467,11 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
 
 } // namespace detail
 
-/*template<typename T>
-void
-mergesort(std::vector<T>& data)
+
+void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 {
-    detail::mergesort(data, 0, data.size()-1);
-}*/ //-> cos'é?
+    detail::mergesort(data, traces, 0, data.size()-1); //POTREBBE DAR PROBLEMI SE data.size()=0? NO (comunque nel secondo assert avrei -1<=0)
+}
 
 
 
