@@ -85,27 +85,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
         for(unsigned int j=i+1; j<fractures.size(); j++){
                 //controllo se i due poligoni sono molto lontani (bounding box) e in quel caso passo alla coppia successiva
                 //prima cerco centro (facendo la media dei vertici) e raggio (massima distanza tra il centro e i vertici) delle bounding box
-                Vector3d centreBB1 = Vector3d::Zero();
-                for(unsigned int k1=0; k1<(fractures[i]).numVertices; k1++){
-                    centreBB1 = centreBB1 + (fractures[i]).vertices[k1];
-                }
-                centreBB1= centreBB1/(fractures[i]).numVertices;
-                double radiusBB1 = 0.0;
-                for(unsigned int k1=0; k1<(fractures[i]).numVertices; k1++){
-                    radiusBB1=max(radiusBB1,((fractures[i]).vertices[k1]-centreBB1).squaredNorm());
-                }
-
-                Vector3d centreBB2 = Vector3d::Zero();
-                for(unsigned int k2=0; k2<(fractures[j]).numVertices; k2++){
-                    centreBB2 = centreBB2 + (fractures[j]).vertices[k2];
-                }
-                double radiusBB2 = 0.0;
-                centreBB2= centreBB2/(fractures[j]).numVertices;
-
-                for(unsigned int k2=0; k2<(fractures[j]).numVertices; k2++){
-                    radiusBB2=max(radiusBB2,((fractures[j]).vertices[k2]-centreBB2).squaredNorm());
-                }
-                if((radiusBB1+radiusBB2)*(radiusBB1+radiusBB2) > (centreBB1-centreBB2).squaredNorm()){ //vado avanti solo se il controllo della
+                bool pass = passBoundingBox(fractures[i],fractures[j]);
+                if(pass){ //vado avanti solo se il controllo della
 //                    bounding box non è passato (se le due probabilmente si intersecano)
                     //ora vedo se c'è effettivamente intersezione
                     array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
@@ -120,12 +101,89 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         //se sono uno di un poligono e uno di un altro è non passante per entrambi
                         //se inoltre i punti interni e esterni coincidono a due a due è passante per entrambi
                         //ricordando che in intPoints ci sono prima due punti del primo poligono (0,1), poi due punti del secondo poligono (2,3)
+                        //escludo casi di punti coincidenti:
+                        bool done=false;
                         if(((intPoints[0]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[1]-intPoints[3]).squaredNorm()<tol*tol)||
                             ((intPoints[1]-intPoints[2]).squaredNorm()<tol*tol && (intPoints[0]-intPoints[3]).squaredNorm()<tol*tol)){
                             tips={false,false};
+                            done=true;
                             extremities = {intPoints[0],intPoints[1]};//di uno dei due poligoni
                         }//passante per entrambi se i punti coincidono
-                        if(tips[0]){
+                        //vedo i casi in cui solo uno coincide
+                        else if ((intPoints[0]-intPoints[2]).squaredNorm()<tol*tol){
+                            done=true;
+                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[3])>0){
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){
+                                    //031
+                                    tips={true,false};
+                                    extremities={intPoints[0],intPoints[3]};}
+                                else{
+                                    //013
+                                    tips={false,true};
+                                    extremities={intPoints[0],intPoints[1]};
+                                }
+                            }
+                            else{
+                                //103
+                                extremities={intPoints[0],intPoints[2]};//si vedrà dopo che ha lunghezza nulla
+                            }
+                        }
+                        else if ((intPoints[1]-intPoints[2]).squaredNorm()<tol*tol){
+                            done=true;
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[3])>0){
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){
+                                    //130
+                                    tips={true,false};
+                                    extremities={intPoints[1],intPoints[3]};}
+                                else{
+                                    //103
+                                    tips={false,true};
+                                    extremities={intPoints[1],intPoints[0]};
+                                }
+                            }
+                            else{
+                                //013
+                                extremities={intPoints[1],intPoints[2]};//si vedrà dopo che ha lunghezza nulla
+                            }
+                        }
+                        else if ((intPoints[0]-intPoints[3]).squaredNorm()<tol*tol){
+                            done=true;
+                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[2])>0){
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>0){
+                                    //021
+                                    tips={true,false};
+                                    extremities={intPoints[0],intPoints[2]};}
+                                else{
+                                    //012
+                                    tips={false,true};
+                                    extremities={intPoints[0],intPoints[1]};
+                                }
+                            }
+                            else{
+                                //102
+                                extremities={intPoints[0],intPoints[3]};//si vedrà dopo che ha lunghezza nulla
+                            }
+                        }
+                        else if ((intPoints[1]-intPoints[3]).squaredNorm()<tol*tol){
+                            done=true;
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[2])>0){
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>0){
+                                    //120
+                                    tips={true,false};
+                                    extremities={intPoints[1],intPoints[2]};}
+                                else{
+                                    //102
+                                    tips={false,true};
+                                    extremities={intPoints[1],intPoints[0]};
+                                }
+                            }
+                            else{
+                                //012
+                                extremities={intPoints[1],intPoints[3]};//si vedrà dopo che ha lunghezza nulla
+                            }
+                        }
+
+                        if(!done){
                             //se non è passante per entrambi, vedo la posizione reciproca con i prodotti scalari:
                             if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>0){ //confronto posizione di 2 rispetto a 0
                                 if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>0){//2 rispetto a 1
@@ -168,10 +226,12 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                         if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){//3 rispetto a 2
                                             //0132
                                             extremities = {intPoints[3],intPoints[1]};
+                                            intersection=false;
                                         }
                                         else{
                                             //0123
                                             extremities = {intPoints[1],intPoints[2]};
+                                            intersection=false;
                                         }
                                     }
                                 }
@@ -192,17 +252,20 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                     if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){ //3 rispetto a 2
                                         //2301
                                         extremities = {intPoints[3],intPoints[0]};
+                                        intersection=false;
                                     }
                                     else{
                                         //3201
                                         extremities = {intPoints[0],intPoints[2]};
+                                        intersection=false;
                                     }
                                 }
                             }
-                        }
+                        } 
                         //calcolo la lunghezza ed escludo il caso in cui sia un unico punto a toccare il poligono
+
                         double len =(extremities[0]-extremities[1]).norm();
-                        if (len>tol){
+                        if (len>tol&&intersection){
                             //creo finalmente la traccia
                             Trace tr;
                             tr.idTr=listTraces.size();
@@ -293,7 +356,7 @@ Vector3d findPlaneEquation(vector<Vector3d>& points, double& constantTerm){ //re
 }
 
 
-inline Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vector3d& p1, const Vector3d& p2 ){
+Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vector3d& p1, const Vector3d& p2 ){
     // eq retta: s=p1+t(p2-p1)
     // eq piano: ax+by+cz+d=0
     double t=-(p1.dot(coeff)+d)/(coeff.dot(p2-p1));
@@ -301,7 +364,38 @@ inline Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, con
     return inter;
 }
 
-inline bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol){
+bool passBoundingBox(Fracture& f1, Fracture& f2){
+    bool pass = false;
+    //controllo se i due poligoni sono molto lontani (bounding box)
+    //prima cerco centro (facendo la media dei vertici) e raggio (massima distanza tra il centro e i vertici) delle bounding box
+
+    Vector3d centreBB1 = Vector3d::Zero();
+    for(unsigned int k1=0; k1<(f1).numVertices; k1++){
+        centreBB1 = centreBB1 + (f1).vertices[k1];
+    }
+    centreBB1= centreBB1/(f1).numVertices;
+    double radiusBB1 = 0.0;
+    for(unsigned int k1=0; k1<(f1).numVertices; k1++){
+        radiusBB1=max(radiusBB1,((f1).vertices[k1]-centreBB1).squaredNorm());
+    }
+
+    Vector3d centreBB2 = Vector3d::Zero();
+    for(unsigned int k2=0; k2<(f2).numVertices; k2++){
+        centreBB2 = centreBB2 + (f2).vertices[k2];
+    }
+    double radiusBB2 = 0.0;
+    centreBB2= centreBB2/(f2).numVertices;
+
+    for(unsigned int k2=0; k2<(f2).numVertices; k2++){
+        radiusBB2=max(radiusBB2,((f2).vertices[k2]-centreBB2).squaredNorm());
+    }
+    if((radiusBB1+radiusBB2)*(radiusBB1+radiusBB2) > (centreBB1-centreBB2).squaredNorm()){
+        pass=true;
+    }
+    return pass;
+}
+
+bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol){
     bool intersection=false;
     //controllo se i piani che contengono le due fratture sono parallelli (non possono intersecarsi)
     double d1; //termine noto piano 1
