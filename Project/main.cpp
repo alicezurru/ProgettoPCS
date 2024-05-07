@@ -11,6 +11,14 @@ using namespace Geometry;
 int main(int argc, char **argv) //passo la tolleranza
 {
 
+    vector<Vector3d> points = {Vector3d(1.0, 2.5, -0.5), Vector3d(2.0, -1.0, 0.0), Vector3d(0.0, 2.0, 1.0)};
+    //non importa quanti punti gli do, userà sempre solo i primi 3, quindi posso dargli direttamente 3 punti
+    double constantTerm=0;
+    Vector3d n = Algebra::findPlaneEquation(points, constantTerm);
+    cout << n[0] << " " << n[1] << n[2];
+
+
+
     double tolInput=stod(argv[1]);
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
@@ -22,6 +30,7 @@ int main(int argc, char **argv) //passo la tolleranza
     vector<Trace> vecTraces=findTraces(vec,tol);
     //printGlobalResults("results", vecTraces);
     //printLocalResults("lresults",vec,vecTraces);
+
 
     //prova findTraces
     /*vector<Trace> vecTraces=findTraces(vec,tol);

@@ -1,12 +1,11 @@
-#ifndef __TEST_H
-#define __TEST_H
+#ifndef __TEST_HPP
+#define __TEST_HPP
 
 #include <gtest/gtest.h>
 #include "Fractures.hpp"
 #include "Utils.hpp"
 #include "Eigen/Eigen"
 #include <iostream>
-//#include "UCDUtilities.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -17,7 +16,7 @@ namespace Geometry {
     //facciamo un test per la lettura da file?
     //EXPECT_EQ();
 }*/
-};
+}
 
 namespace Algebra{
 
@@ -31,20 +30,20 @@ TEST(ALGEBRATEST, TestFindPlaneEquation){
 }
 
 //inline Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vector3d& p1, const Vector3d& p2);
-TEST(ALGEBRATEST, TestIntersectionPlaneLine){
+/*TEST(ALGEBRATEST, TestIntersectionPlaneLine){
     Vector3d coeff = {1.0, -2.5, 3};
     double d= 0.5;
     Vector3d p1 = {0, 1.5, 0};
     Vector3d p2 = {-0.5, 0, 1.5};
     Vector3d intersection = intersectionPlaneLine(coeff, d, p1, p2);
 
-}
+}*/
 
 /*TEST(ALGEBRATEST, TestFindIntersectionPoints){
 
 }*/
 
-};
+}
 
 namespace detail{
 /*TEST(SORTINGTEST, TestMerge){

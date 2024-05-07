@@ -1,5 +1,6 @@
-#include "Utils.hpp"
+
 #include "Fractures.hpp"
+#include "Utils.hpp"
 
 #include<iostream>
 #include<sstream>
@@ -14,6 +15,7 @@
 using namespace std;
 using namespace Eigen;
 using namespace Algebra;
+using namespace detail;
 
 
 namespace Geometry{
@@ -279,7 +281,7 @@ void printLocalResults (const string& fileName,const vector<Fracture>& fractures
 namespace Algebra{
 
 //per trovare l'equazione del piano che contiene i vertici di un poligono
-inline Vector3d findPlaneEquation(vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
+Vector3d findPlaneEquation(vector<Vector3d>& points, double& constantTerm){ //restituisce la normale e modifica il dato in input che corrisponde al termine noto
     //assumiamo che non ci possano essere 3 punti allineati e che le fratture siano planari
     //calcolo della normale:
     Vector3d v1=points[1]-points[0];
@@ -463,15 +465,15 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
     /* Caso base: il vettore di un solo elemento Ã¨ ordinato */
 }
 
-} // namespace detail
-
-
 void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 {
     if (data.size()>0){ //va aggiunto il controllo perché se data.size()=0 avrei come right -1 (ma size_t non può essere negativo)
         detail::mergesort(data, traces, 0, data.size()-1);
     }
 }
+
+} // namespace detail
+
 
 
 
