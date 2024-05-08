@@ -9,22 +9,8 @@ class Fracture
 + passingTraces: vector<unsigned int>
 + notPassingTraces: vector<unsigned int>
 
-..Non member function ..
-+ bool readFractures(string&, vector<Fracture>&, double)
-
-@startuml
-package Geometry <<Folder>>{
-
-class Fracture
-{
-+ idFrac: unsigned int
-+ numVertices: unsigned int 
-+ vertices: vector<Vector3d>
-+ passingTraces: vector<unsigned int>
-+ notPassingTraces: vector<unsigned int>
-
-..Non member function ..
-+ bool readFractures(string&, vector<Fracture>&, double)
+..Non member functions ..
++ bool readFractures(string&,vector<Fracture>&,double)
 
 ..TEST FRACTURE..
 
@@ -37,13 +23,11 @@ class Trace
 + fracturesIds: array<unsigned int,2>
 + length: double
 + Tips: array<bool,2>
-
-'+ vector<double> computeArea()
-'+ void gedimInterface(v<v<unsigned int>>&)
++ PassThrough: array<bool,2>
 
 
-..Non member function ..
-+ vector<Trace> findTraces(vector<Fracture>)
+..Non member functions ..
++ vector<Trace> findTraces(vector<Fracture>,double)
 ..TEST TRACE..
 NOMITEST
 }
@@ -51,7 +35,7 @@ NOMITEST
 
 package Gedim <<Frame>>{
 }
-note "Gedim is an external library" as GedimN
+note "External library" as GedimN
 GedimN..Gedim
 
 Gedim ..> Fracture::gedimInterface 
@@ -60,6 +44,31 @@ Trace "2"--o "many" Fracture : has
 
 
 package Algebra <<Folder>>{
+Class Algebra_functions {
++ Vector3d findPlaneEquation(vector<Vector3d>&,double&)
++ Vector3d intersectionPlaneLine(Vector3d&,double,Vector3d&,Vector3d&)
++ bool findIntersectionPoints(Fracture&,Fracture&,array<Vector3d,4>&,double,array<bool,2>)
++ passBoundingBox(Fracture&,Fracture&)
++ findInternalPoints(array<Vector3d,4>&,double,array<Vector3d,2>&,array<bool,2>&)
 
+..ALGEBRATEST..
+TestFindPlaneEquation
+TestIntersectionPlaneLine
+TestFindIntersectionPoints
+TestpassBoundingBox
+}
+Algebra_functions ..> Trace
+
+}
+
+package detail <<Folder>>{
+Class detail_functions {
++ void merge(vector<unsigned int>&,vector<Trace>&,size_t,size_t,size_t)
++ void mergesort(vector<unsigned int>&,vector<Trace>&,size_t,size_t)
++ void mergesort(vector<unsigned int>&,vector<Trace>&)
+..DETAILTEST..
+
+}
+detail_functions..> Trace
 }
 @enduml

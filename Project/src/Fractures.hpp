@@ -20,14 +20,6 @@ struct Fracture{
     vector <unsigned int> notPassingTraces={};
 
     Fracture()=default; //default
-     //overloading del costruttore nel caso in cui voglia il valore Null (per fratture con problemi)
-    /*Fracture(int num){
-        if (num != -1)
-            cerr << "errore nella creazione della frattura" << endl;
-        else{
-            idFrac=-1;
-        }
-    }*/
 
 };
 
