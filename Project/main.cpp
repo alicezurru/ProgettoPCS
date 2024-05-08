@@ -4,29 +4,25 @@
 #include <Eigen/Eigen>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
 using namespace Geometry;
 
 int main(int argc, char **argv) //passo la tolleranza
 {
-
-    vector<Vector3d> points = {Vector3d(1.0, 2.5, -0.5), Vector3d(2.0, -1.0, 0.0), Vector3d(0.0, 2.0, 1.0)};
-    //non importa quanti punti gli do, userà sempre solo i primi 3, quindi posso dargli direttamente 3 punti
-    double constantTerm=0;
-    Vector3d n = Algebra::findPlaneEquation(points, constantTerm);
-
+    chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
     double tolInput=stod(argv[1]);
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR200_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
     vector<Trace> vecTraces=findTraces(vec,tol);
-    //printGlobalResults("results", vecTraces);
-    //printLocalResults("lresults",vec,vecTraces);
+    printGlobalResults("results", vecTraces);
+    printLocalResults("lresults",vec,vecTraces);
 
 
     //prova findTraces
@@ -70,7 +66,9 @@ int main(int argc, char **argv) //passo la tolleranza
     double constantTerm=0;
     Vector3d n = Algebra::findPlaneEquation(points, constantTerm);*/
 
-
+    chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
+    double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();
+    cout<<"Tempo impiegato: "<<duration<<endl;
     return 0;
 }
 

@@ -90,7 +90,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
 //                    bounding box non è passato (se le due probabilmente si intersecano)
                     //ora vedo se c'è effettivamente intersezione
                     array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
-                    bool intersection = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol);
+                    array<bool,2> onThePlane;
+                    bool intersection = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol, onThePlane);
                     if(intersection){
                         //ora stabiliamo tra i 4 potenziali chi sono i punti di intersezione
                         array<Vector3d,2> extremities; //qui salverò i due punti estremi della traccia
@@ -112,8 +113,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         //vedo i casi in cui solo uno coincide
                         else if ((intPoints[0]-intPoints[2]).squaredNorm()<tol*tol){
                             done=true;
-                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[3])>0){
-                                if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){
+                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[3])>tol){
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>tol){
                                     //031
                                     tips={true,false};
                                     extremities={intPoints[0],intPoints[3]};}
@@ -130,8 +131,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         }
                         else if ((intPoints[1]-intPoints[2]).squaredNorm()<tol*tol){
                             done=true;
-                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[3])>0){
-                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[3])>tol){
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>tol){
                                     //130
                                     tips={true,false};
                                     extremities={intPoints[1],intPoints[3]};}
@@ -148,8 +149,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         }
                         else if ((intPoints[0]-intPoints[3]).squaredNorm()<tol*tol){
                             done=true;
-                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[2])>0){
-                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>0){
+                            if((intPoints[0]-intPoints[1]).dot(intPoints[0]-intPoints[2])>tol){
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>tol){
                                     //021
                                     tips={true,false};
                                     extremities={intPoints[0],intPoints[2]};}
@@ -166,8 +167,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         }
                         else if ((intPoints[1]-intPoints[3]).squaredNorm()<tol*tol){
                             done=true;
-                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[2])>0){
-                                if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>0){
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[1]-intPoints[2])>tol){
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>tol){
                                     //120
                                     tips={true,false};
                                     extremities={intPoints[1],intPoints[2]};}
@@ -185,10 +186,10 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
 
                         if(!done){
                             //se non è passante per entrambi, vedo la posizione reciproca con i prodotti scalari:
-                            if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>0){ //confronto posizione di 2 rispetto a 0
-                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>0){//2 rispetto a 1
-                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){//3 rispetto a 2
-                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){//3 rispetto a 0
+                            if((intPoints[1]-intPoints[0]).dot(intPoints[2]-intPoints[0])>tol){ //confronto posizione di 2 rispetto a 0
+                                if((intPoints[0]-intPoints[1]).dot(intPoints[2]-intPoints[1])>tol){//2 rispetto a 1
+                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>tol){//3 rispetto a 2
+                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>tol){//3 rispetto a 0
                                             //0321
                                             extremities = {intPoints[3],intPoints[2]};
                                             tips[1]=false;
@@ -199,7 +200,7 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                         }
                                     }
                                     else{
-                                        if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){//3 rispetto a 1
+                                        if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>tol){//3 rispetto a 1
                                             //0231
                                             extremities = {intPoints[3],intPoints[2]};
                                             tips[1]=false;
@@ -211,8 +212,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                     }
                                 }
                                 else{
-                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){//3 rispetto a 1
-                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){//3 rispetto a 0
+                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>tol){//3 rispetto a 1
+                                        if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>tol){//3 rispetto a 0
                                             //0312
                                             extremities = {intPoints[3],intPoints[1]};
                                         }
@@ -223,7 +224,7 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                         }
                                     }
                                     else{
-                                        if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){//3 rispetto a 2
+                                        if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>tol){//3 rispetto a 2
                                             //0132
                                             extremities = {intPoints[3],intPoints[1]};
                                             intersection=false;
@@ -237,8 +238,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                 }
                             }
                             else{
-                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>0){ //3 rispetto a 0
-                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>0){ //3 rispetto a 1
+                                if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>tol){ //3 rispetto a 0
+                                    if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>tol){ //3 rispetto a 1
                                         //2031
                                         extremities = {intPoints[3],intPoints[0]};
                                     }
@@ -249,7 +250,7 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                                     }
                                 }
                                 else{
-                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>0){ //3 rispetto a 2
+                                    if((intPoints[0]-intPoints[2]).dot(intPoints[3]-intPoints[2])>tol){ //3 rispetto a 2
                                         //2301
                                         extremities = {intPoints[3],intPoints[0]};
                                         intersection=false;
@@ -273,6 +274,7 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                             tr.fracturesIds = {fractures[i].idFrac,fractures[j].idFrac};
                             tr.length=len;
                             tr.Tips=tips;
+                            tr.passThrough=onThePlane;
                             listTraces.push_back(tr);//inserisco la traccia ora creata nella lista
                             if(tips[0]){ //e nel vettore corrispondente nella frattura
                                 fractures[i].notPassingTraces.push_back(tr.idTr);
@@ -395,8 +397,8 @@ bool passBoundingBox(Fracture& f1, Fracture& f2){
     return pass;
 }
 
-bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol){
-    bool intersection=false;
+bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol, array<bool,2>& onThePlane){
+    bool intersection=false; //CAMBIA: è tipo probabile intersezione, caso Andrea
     //controllo se i piani che contengono le due fratture sono parallelli (non possono intersecarsi)
     double d1; //termine noto piano 1
     double d2;
@@ -407,13 +409,30 @@ bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPo
         //posizione dei punti del poligono 2 rispetto al piano 1
         bool positive=false; //per segnalare se il vertice analizzato in questo momento sta "sopra" (true) o "sotto"(false) il piano
         bool previous=false;
-        if ((f2.vertices[0]).dot(coeff1)+d1>0){
+        if ((f2.vertices[0]).dot(coeff1)+d1>tol){
             previous=true;//vedo se si comincia "sopra" o "sotto"
         }
         unsigned int count1=0; //conto quanti vertici stanno dall'altra parte
         unsigned int firstVertexOtherSide2=0;
+        onThePlane[0] = false; //metto anche il caso in cui si toccano senza che uno passi attraverso l'altro
         for (unsigned int i=1; i<f2.numVertices; i++){
-            if ((f2.vertices[i]).dot(coeff1)+d1>0){ //vedo da che parte stanno i vertici
+            if(abs((f2.vertices[i]).dot(coeff1)+d1)<tol){
+                //se ne ho due di fila sul piano, ho traccia particolare in cui uno non passa attraverso l'altro
+                if(abs((f2.vertices[(i+1)%f2.numVertices]).dot(coeff1)+d1)<tol){
+                    onThePlane[0]=true;
+                    intPoints[2]=f2.vertices[i];
+                    intPoints[3]=f2.vertices[(i+1)%f2.numVertices];
+                    break;
+                }
+                else if(abs((f2.vertices[(i-1)%f2.numVertices]).dot(coeff1)+d1)<tol){
+                    onThePlane[0]=true;
+                    intPoints[2]=f2.vertices[(i-1)%f2.numVertices];
+                    intPoints[3]=f2.vertices[i];
+                    break;
+                }
+
+                }
+            if ((f2.vertices[i]).dot(coeff1)+d1>tol){ //vedo da che parte stanno i vertici
                 positive=true;
             }
             else {
@@ -434,19 +453,36 @@ bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPo
             previous=positive;
 
         }
-        if(count1!=0){ //c'è almeno un vertice dall'altra parte
+        if(count1!=0||onThePlane[0]){ //c'è almeno un vertice dall'altra parte
             intersection=true;
         }
         //ora posizione dei punti del poligono 1 rispetto al piano 2
         if(intersection){ //solo se già risulta accaduto per il piano 1
             previous=false;
-            if ((f1.vertices[0]).dot(coeff2)+d2>0){
+            onThePlane[1] = false; //metto anche il caso in cui si toccano senza che uno passi attraverso l'altro
+            if ((f1.vertices[0]).dot(coeff2)+d2>tol){
                 previous=true;//vedo se si comincia "sopra" o "sotto"
             }
             unsigned int count2=0;
             unsigned int firstVertexOtherSide1=0;
-            for (unsigned int i=1; i<f1.numVertices; i++){ //C'ERA UN ERRORE (f2.numVertices invece di f1)
-                if ((f1.vertices[i]).dot(coeff2)+d2>0){ //vedo da che parte stanno i vertici
+            for (unsigned int i=1; i<f1.numVertices; i++){
+                if(abs((f1.vertices[i]).dot(coeff2)+d2)<tol){
+                    //se ne ho due di fila sul piano, ho traccia particolare in cui uno non passa attraverso l'altro
+                    if(abs((f1.vertices[(i+1)%f1.numVertices]).dot(coeff2)+d2)<tol){
+                        onThePlane[1]=true;
+                        intPoints[0]=f1.vertices[i];
+                        intPoints[1]=f1.vertices[(i+1)%f1.numVertices];
+                        break;
+                    }
+                    else if(abs((f1.vertices[(i-1)%f1.numVertices]).dot(coeff2)+d2)<tol){
+                        onThePlane[1]=true;
+                        intPoints[0]=f1.vertices[(i-1)%f1.numVertices];
+                        intPoints[1]=f1.vertices[i];
+                        break;
+                    }
+
+                }
+                if ((f1.vertices[i]).dot(coeff2)+d2>tol){ //vedo da che parte stanno i vertici
                     positive=true;
                 }
                 else {
@@ -466,13 +502,17 @@ bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPo
                 previous=positive;
             }
 
-            if(count2!=0){ //c'è intersezione
+            if(count2!=0||onThePlane[1]){ //c'è intersezione
                 //ora individuo i punti di intersezione
+                if(!onThePlane[1]){//se non so gia che i due punti sono sul piano
                 intPoints[0]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1-1)],f1.vertices[firstVertexOtherSide1]);
                 intPoints[1]=intersectionPlaneLine(coeff2, d2,f1.vertices[(firstVertexOtherSide1+count2-1)%f1.numVertices],f1.vertices[(firstVertexOtherSide1+count2)%f1.numVertices]);
+                }
                 //i primi due punti sono del poligono 1, i successivi 2 del poligono 2
+                if(!onThePlane[0]){
                 intPoints[2]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2-1)],f2.vertices[firstVertexOtherSide2]);
                 intPoints[3]=intersectionPlaneLine(coeff1, d1,f2.vertices[(firstVertexOtherSide2+count1-1)%f2.numVertices],f2.vertices[(firstVertexOtherSide2+count1)%f2.numVertices]);
+                }
             }
             else{
                 intersection=false;
@@ -484,15 +524,6 @@ bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPo
 }
 
 }
-
-/*template<typename T>
-void print(const std::vector<T>& vs)
-{
-    for (auto & v : vs)
-        std::cout << v << " ";
-    std::cout << std::endl;
-}*/
-
 
 namespace detail { //per ordinare
 //modifico la funzione già esistente di mergesort in modo da far ordinare le tracce per lunghezza

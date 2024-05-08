@@ -38,6 +38,7 @@ struct Trace{
     array <int, 2> fracturesIds={}; //array degli id delle due fratture che formano la traccia
     array<bool,2> Tips={}; //memorizza se la traccia è passante (F) o no (V) in ognuna delle due fratture coinvolte
     double length;
+    array<bool,2> passThrough;
 };
 
 }

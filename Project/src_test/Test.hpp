@@ -57,17 +57,18 @@ TEST(ALGEBRATEST, TestFindIntersectionPoints){
     f2.numVertices=4;
     f2.vertices={Vector3d(1,-0.5,0.5),Vector3d(3,-0.5,0.5),Vector3d(3,0.5,0.5),Vector3d(1,0.5,0.5)};
     array<Vector3d,4> intPoints={Vector3d(0,0,0),Vector3d(0,0,0),Vector3d(0,0,0),Vector3d(0,0,0)};
-    bool intersection = findIntersectionPoints(f1,f2,intPoints,tol);
-    ASSERT_TRUE(intersection);
+    array<bool,2> onThePlane;
+    bool intersection = findIntersectionPoints(f1,f2,intPoints,tol,onThePlane);
+    EXPECT_TRUE(intersection);
     array<Vector3d,4> ok={Vector3d(2,0,0.5),Vector3d(0,0,0.5),Vector3d(3,0,0.5),Vector3d(1,0,0.5)};
-    ASSERT_EQ(intPoints, ok);
+    EXPECT_EQ(intPoints, ok);
 
     //testo un caso in cui non c'è intersezione ma i piani non sono paralleli
     //tengo f1 come prima
     f2.vertices={Vector3d(10,-0.5,0.5),Vector3d(12,-0.5,0.5),Vector3d(12,0.5,0.5),Vector3d(10,0.5,0.5)};
     intersection=true;
-    intersection = findIntersectionPoints(f1,f2,intPoints,tol);
-    ASSERT_FALSE(intersection);//DA CAMBIARE
+    intersection = findIntersectionPoints(f1,f2,intPoints,tol,onThePlane);
+    EXPECT_FALSE(intersection);//DA CAMBIARE
 
 
     //testo un caso in cui non c'è intersezione perchè i piani sono paralleli
@@ -76,8 +77,8 @@ TEST(ALGEBRATEST, TestFindIntersectionPoints){
     f2.numVertices=3;
     f2.vertices={Vector3d(0,1,1),Vector3d(1,0,1),Vector3d(0.5,0.5,1)};
     intersection=true;
-    intersection = findIntersectionPoints(f1,f2,intPoints,tol);
-    ASSERT_FALSE(intersection);
+    intersection = findIntersectionPoints(f1,f2,intPoints,tol,onThePlane);
+    EXPECT_FALSE(intersection);
 
     //
 

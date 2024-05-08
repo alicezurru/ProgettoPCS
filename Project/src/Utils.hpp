@@ -17,10 +17,9 @@ void printLocalResults (const string& fileName,const vector<Fracture>&fractures,
 }
 
 namespace Algebra{
-//inline?
 Vector3d findPlaneEquation(vector<Vector3d>& points, double& constantTerm); //T
 Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vector3d& p1, const Vector3d& p2); //T
-bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol);
+bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol, array<bool,2>& onThePlane);
 bool passBoundingBox(Fracture& f1, Fracture& f2);
 }
 
