@@ -4,6 +4,7 @@
 #include <Eigen/Eigen>
 #include <vector>
 #include "Fractures.hpp"
+#include <cmath>
 
 
 using namespace std;
@@ -22,6 +23,11 @@ Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vect
 bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol, array<bool,2>& onThePlane); //T
 bool passBoundingBox(Fracture& f1, Fracture& f2); //T
 bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d,2>& extremities, array<bool,2>& tips);
+inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2){ //passo già la tol2 in modo da non doverla ricavare ogni volta
+    if((v1-v2).squaredNorm()<= tol2)
+        return true;
+    return false;
+}
 }
 
 namespace detail{

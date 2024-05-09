@@ -239,7 +239,7 @@ bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPo
 
     Vector3d coeff1 = findPlaneEquation(f1.vertices, d1); //coefficienti del piano che contengono la frattura 1
     Vector3d coeff2 = findPlaneEquation(f2.vertices, d2);
-    tol2=max((10*numeric_limits<double>::epsilon(), tol);
+    double tol2=max(10*numeric_limits<double>::epsilon(), tol*tol);
     if((coeff1.cross(coeff2)).squaredNorm()>tol2){ //i piani sono paralleli se hanno normali parallele
         //posizione dei punti del poligono 2 rispetto al piano 1
         bool positive=false; //per segnalare se il vertice analizzato in questo momento sta "sopra" (true) o "sotto"(false) il piano
@@ -369,7 +369,7 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
     //escludo casi di punti coincidenti:
     bool done=false;
     bool intersection=true; //vede se c'è effettivamente intersezione
-    tol2=max((10*numeric_limits<double>::epsilon(), tol);
+    double tol2=max(10*numeric_limits<double>::epsilon(), tol*tol);
     if(((intPoints[0]-intPoints[2]).squaredNorm()<tol2 && (intPoints[1]-intPoints[3]).squaredNorm()<tol2)||
         ((intPoints[1]-intPoints[2]).squaredNorm()<tol2 && (intPoints[0]-intPoints[3]).squaredNorm()<tol2)){
         tips={false,false};
@@ -459,10 +459,13 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
                         //0321
                         extremities = {intPoints[3],intPoints[2]};
                         tips[1]=false;
+                        tips[0]=true; //S
                     }
                     else{
                         //3021
                         extremities = {intPoints[0],intPoints[2]};
+                        tips[0]=true; //S
+                        tips[1]=true; //S
                     }
                 }
                 else{
@@ -470,10 +473,13 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
                         //0231
                         extremities = {intPoints[3],intPoints[2]};
                         tips[1]=false;
+                        tips[0]=true; //S
                     }
                     else{
                         //0213
                         extremities = {intPoints[1],intPoints[2]};
+                        tips[0]=true; //S
+                        tips[1]=true; //S
                     }
                 }
             }
@@ -482,11 +488,14 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
                     if((intPoints[1]-intPoints[0]).dot(intPoints[3]-intPoints[0])>tol){//3 rispetto a 0
                         //0312
                         extremities = {intPoints[3],intPoints[1]};
+                        tips[0]=true; //S
+                        tips[1]=true; //S
                     }
                     else{
                         //3012
                         extremities = {intPoints[0],intPoints[1]};
                         tips[0]=false;
+                        tips[1]=true; //S
                     }
                 }
                 else{
@@ -508,11 +517,14 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
                 if((intPoints[0]-intPoints[1]).dot(intPoints[3]-intPoints[1])>tol){ //3 rispetto a 1
                     //2031
                     extremities = {intPoints[3],intPoints[0]};
+                    tips[0]=true; //S
+                    tips[1]=true; //S
                 }
                 else{
                     //2013
                     extremities = {intPoints[0],intPoints[1]};
-                    tips[1]=false;
+                    tips[1]=true; //S (ho cambiato, era scritto false)
+                    tips[0]=false;
                 }
             }
             else{
