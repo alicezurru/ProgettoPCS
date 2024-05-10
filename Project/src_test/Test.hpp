@@ -13,10 +13,12 @@ using namespace std;
 //using namespace Algebra;
 
 namespace Geometry {
-/*TEST(FRACTURESTEST, TestReadingFractures){
-    //facciamo un test per la lettura da file?
-    //EXPECT_EQ();
-}*/
+
+TEST(FRACTURESTEST, TestReadingFractures){
+    //test per la lettura da file
+    double tol=10*numeric_limits<double>::epsilon();
+
+}
 }
 
 namespace Algebra{
