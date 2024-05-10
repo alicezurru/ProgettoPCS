@@ -11,8 +11,11 @@ class Fracture
 
 ..Non member functions ..
 + bool readFractures(string&,vector<Fracture>&,double)
++ void printLocalResults (string&,vector<Fracture>&,vector<Trace>&)
 
 ..TEST FRACTURE..
+TestReadFractures
+TestPrintLocalResults
 
 }
 
@@ -28,8 +31,11 @@ class Trace
 
 ..Non member functions ..
 + vector<Trace> findTraces(vector<Fracture>,double)
++ void printGlobalResults (string&,vector<Trace>&)
 ..TEST TRACE..
 NOMITEST
+TestFindTraces
+TestPrintGlobalResults
 }
 }
 
@@ -55,9 +61,10 @@ Class Algebra_functions {
 TestFindPlaneEquation
 TestIntersectionPlaneLine
 TestFindIntersectionPoints
-TestpassBoundingBox
+TestPassBoundingBox
+TestFindInternalPoints
 }
-Algebra_functions ..> Trace
+Algebra_functions ..> Fracture
 
 }
 
@@ -67,8 +74,11 @@ Class detail_functions {
 + void mergesort(vector<unsigned int>&,vector<Trace>&,size_t,size_t)
 + void mergesort(vector<unsigned int>&,vector<Trace>&)
 ..DETAILTEST..
+TestMergesort
 
 }
 detail_functions..> Trace
 }
+
+
 @enduml
