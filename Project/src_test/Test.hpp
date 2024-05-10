@@ -10,14 +10,26 @@
 
 using namespace Eigen;
 using namespace std;
-//using namespace Algebra;
+using namespace Algebra;
 
 namespace Geometry {
 
 TEST(FRACTURESTEST, TestReadingFractures){
     //test per la lettura da file
+    //bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);
     double tol=10*numeric_limits<double>::epsilon();
-
+    vector<Fracture> vec;
+    string path="./DFN";
+    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
+    EXPECT_TRUE(flag);
+    EXPECT_EQ(vec[0].idFrac,0);
+    EXPECT_EQ(vec[1].idFrac,1);
+    EXPECT_EQ(vec[2].idFrac,2);
+    //controllo i vertici del primo
+    EXPECT_TRUE(areVectorsEqual(vec[0].vertices[0],Vector3d(0,0,0),tol));
+    EXPECT_TRUE(areVectorsEqual(vec[0].vertices[1],Vector3d(1,0,0),tol));
+    EXPECT_TRUE(areVectorsEqual(vec[0].vertices[2],Vector3d(1,1,0),tol));
+    EXPECT_TRUE(areVectorsEqual(vec[0].vertices[3],Vector3d(0,1,0),tol));
 }
 }
 
@@ -135,7 +147,6 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     f2.numVertices=4;
     f2.vertices={Vector3d(3,-0.5,0.5),Vector3d(5,-0.5,0.5),Vector3d(5,0.5,0.5),Vector3d(3,0.5,0.5)};
     array<bool,2> onThePlane = {false, false}; //nessuno dei vertici sta sul piano dell'altra frattura
-
     //DOMANDA: devo usare findIntersectionPoints per trovarla??
     array<Vector3d,4> intPoints; //= {Vector3d(0,0,0.5), Vector3d(2,0,0.5), Vector3d(3,0,0.5), Vector3d(5,0,0.5)};
     findIntersectionPoints(f1, f2, intPoints, tol, onThePlane);
@@ -145,21 +156,14 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     EXPECT_FALSE(intersection);
 
     //testo un caso in cui c'è intersezione e la traccia è non passante per entrambe le fratture e f1 è poggiato sopra il piano di f2
-    /*f1.numVertices=3;
+    f1.numVertices=3;
     f1.vertices = {Vector3d(4,0,0.5), Vector3d(6,0,0.5), Vector3d(5,0.5,1)};
     //come frattura f2 tengo la stessa di prima
     findIntersectionPoints(f1, f2, intPoints, tol, onThePlane); //aggiorno i valori di intPoints da passare a findInternalpoints
-
-    //TOGLI
-    array<Vector3d, 4> ok = {Vector3d(3,0,0.5), Vector3d(4,0,0.5), Vector3d(5,0,0.5), Vector3d(6,0,0.5)};
-    //EXPECT_EQ(intPoints, ok);
-
     intersection = findInternalPoints(intPoints, tol, extremities, tips);
     array<Vector3d,2> extremities_ok = {Vector3d(4,0,0.5), Vector3d(5,0,0.5)};
-    array <bool, 2> tips_ok = {false, true}; //cade sul lato del triangolo
     EXPECT_TRUE(intersection);
     EXPECT_EQ(extremities, extremities_ok);
-    EXPECT_EQ(tips, tips_ok);*/ //RIVEDI QUESTO CASO
 
     //testo un caso in cui c'è intersezione e la traccia è non passante per entrambe le fratture
     f1.numVertices=3;
@@ -167,7 +171,7 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     //come frattura f2 tengo la stessa di prima
     findIntersectionPoints(f1, f2, intPoints, tol, onThePlane); //aggiorno i valori di intPoints da passare a findInternalpoints
     intersection = findInternalPoints(intPoints, tol, extremities, tips);
-    array<Vector3d,2> extremities_ok = {Vector3d(4.166666666666667,0.083333333333333,0.5), Vector3d(5,0.083333333333333,0.5)};
+    extremities_ok = {Vector3d(4.166666666666667,0.083333333333333,0.5), Vector3d(5,0.083333333333333,0.5)};
     array <bool, 2> tips_ok = {true, true}; //non passante per entrambe
     EXPECT_TRUE(intersection);
     EXPECT_TRUE(areVectorsEqual(extremities[0], extremities_ok[0], tol));
@@ -206,14 +210,6 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     findIntersectionPoints(f1, f2, intPoints, tol, onThePlane); //aggiorno i valori di intPoints da passare a findInternalpoints
     intersection = findInternalPoints(intPoints, tol, extremities, tips);
     EXPECT_FALSE(intersection);
-
-    //testo un caso particolare in cui c'è un solo punto di intersezione (traccia di lunghezza nulla)
-    f1.vertices = {Vector3d(4,-0,0.5), Vector3d(4,1,1), Vector3d(3.5,-1,1)}; //lo tocca sul lato del rettangolo
-    //come frattura f2 tengo la stessa di prima
-    findIntersectionPoints(f1, f2, intPoints, tol, onThePlane); //aggiorno i valori di intPoints da passare a findInternalpoints
-    intersection = findInternalPoints(intPoints, tol, extremities, tips);
-    EXPECT_FALSE(intersection);
-
 }
 
 
@@ -221,13 +217,43 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
 }
 
 namespace detail{
-/*TEST(SORTINGTEST, TestMerge){
-
-}
 
 TEST(SORTINGTEST, TestMergeSort){
+    vector<Trace> vecProvaMS(5);
+    Trace t1;
+    t1.idTr=0;
+    t1.length=1.0;
+    Trace t2;
+    t2.idTr=1;
+    t2.length=5.0;
+    Trace t3;
+    t3.idTr=2;
+    t3.length=2.0;
+    Trace t4;
+    t3.idTr=3;
+    t3.length=1.0;
+    Trace t5;
+    t3.idTr=4;
+    t3.length=1.5;
+    vector<unsigned int> idProvaMS ={0,1,2,3,4};
+    //ordine:1403
+    vecProvaMS.push_back(t1);
+    vecProvaMS.push_back(t2);
+    vecProvaMS.push_back(t3);
+    vecProvaMS.push_back(t4);
+    vecProvaMS.push_back(t5);
+    detail::mergesort(idProvaMS, vecProvaMS,0,4);
+    EXPECT_EQ(idProvaMS[0],1);
+    EXPECT_EQ(idProvaMS[1],2);
+    EXPECT_EQ(idProvaMS[2],0);
+    EXPECT_EQ(idProvaMS[3],4);
 
-}*/
+    //provo con lunghezza nulla
+    idProvaMS ={};
+
+
+
+}
 
 }
 

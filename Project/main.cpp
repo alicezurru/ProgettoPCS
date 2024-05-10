@@ -16,7 +16,7 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR10_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
@@ -35,11 +35,14 @@ int main(int argc, char **argv) //passo la tolleranza
     }*/
 
 
-    //prova mergesort
-    /*vector<Trace> vecProvaMS;
+    chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
+    double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();
+    cout<<"Tempo impiegato: "<<duration<<endl;
+
+    vector<Trace> vecProvaMS(5);
     Trace t1;
     t1.idTr=0;
-    t1.length=3.0;
+    t1.length=5.0;
     Trace t2;
     t2.idTr=1;
     t2.length=5.0;
@@ -52,23 +55,18 @@ int main(int argc, char **argv) //passo la tolleranza
     Trace t5;
     t3.idTr=4;
     t3.length=1.5;
-    vector<unsigned int> idProvaMS ={0,1,2,3,4};
+    vector<unsigned int> idProvaMS ={0,1,3,4};
+    //ordine:1403
     vecProvaMS.push_back(t1);
     vecProvaMS.push_back(t2);
     vecProvaMS.push_back(t3);
     vecProvaMS.push_back(t4);
-    vecProvaMS.push_back(t5);*/
-    /*detail::mergesort(idProvaMS, vecProvaMS, 0, 4);
-    for(unsigned int i=0; i<5; i++)
-        cout << idProvaMS[i] << endl;*/
-
-    /*vector<Vector3d> points = {Vector3d(1.0, 2.5, -0.5), Vector3d(2.0, -1.0, 0.0), Vector3d(0.0, 2.0, 1.0)};
-    double constantTerm=0;
-    Vector3d n = Algebra::findPlaneEquation(points, constantTerm);*/
-
-    chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
-    double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();
-    cout<<"Tempo impiegato: "<<duration<<endl;
+    vecProvaMS.push_back(t5);
+    detail::mergesort(idProvaMS, vecProvaMS,0,3);
+    cout<<idProvaMS[0];
+    cout<<idProvaMS[1];
+    cout<<idProvaMS[2];
+    cout<<idProvaMS[3];
 
     return 0;
 }

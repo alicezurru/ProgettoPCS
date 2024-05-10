@@ -96,6 +96,14 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                         array<Vector3d,2> extremities; //qui salverò i due punti estremi della traccia
                         array<bool,2> tips = {true,true}; //se resta così è non passante per entrambi
                         bool intersection = findInternalPoints(intPoints,tol,extremities,tips);
+                        //modifico tips in caso di onThePlane
+                        if(onThePlane[0]){
+                            tips[0]=false;
+                        }
+                        if(onThePlane[1]){
+                            tips[1]=false;
+                        }
+
                         //calcolo la lunghezza ed escludo il caso in cui sia un unico punto a toccare il poligono
                         double len =(extremities[0]-extremities[1]).norm();
                         if (len>tol&&intersection){
