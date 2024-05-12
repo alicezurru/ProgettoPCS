@@ -220,37 +220,34 @@ namespace detail{
 
 TEST(SORTINGTEST, TestMergeSort){
     vector<Trace> vecProvaMS(5);
+    Trace t0;
+    t0.idTr=0;
+    t0.length=1.0;
     Trace t1;
-    t1.idTr=0;
-    t1.length=1.0;
+    t1.idTr=1;
+    t1.length=5.0;
     Trace t2;
-    t2.idTr=1;
-    t2.length=5.0;
+    t2.idTr=2;
+    t2.length=2.0;
     Trace t3;
-    t3.idTr=2;
-    t3.length=2.0;
-    Trace t4;
     t3.idTr=3;
     t3.length=1.0;
-    Trace t5;
-    t3.idTr=4;
-    t3.length=1.5;
+    Trace t4;
+    t4.idTr=4;
+    t4.length=1.5;
     vector<unsigned int> idProvaMS ={0,1,2,3,4};
-    //ordine:1403
-    vecProvaMS.push_back(t1);
-    vecProvaMS.push_back(t2);
-    vecProvaMS.push_back(t3);
-    vecProvaMS.push_back(t4);
-    vecProvaMS.push_back(t5);
-    detail::mergesort(idProvaMS, vecProvaMS,0,4);
+    //ordine:124(03)
+    vecProvaMS[0]=t0;
+    vecProvaMS[1]=t1;
+    vecProvaMS[2]=t2;
+    vecProvaMS[3]=t3;
+    vecProvaMS[4]=t4;
+    mergesort(idProvaMS, vecProvaMS);
     EXPECT_EQ(idProvaMS[0],1);
     EXPECT_EQ(idProvaMS[1],2);
-    EXPECT_EQ(idProvaMS[2],0);
-    EXPECT_EQ(idProvaMS[3],4);
-
-    //provo con lunghezza nulla
-    idProvaMS ={};
-
+    EXPECT_EQ(idProvaMS[2],4);
+    EXPECT_EQ(idProvaMS[3],0);
+    EXPECT_EQ(idProvaMS[4],3);
 
 
 }

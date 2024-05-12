@@ -11,7 +11,7 @@ using namespace Geometry;
 
 int main(int argc, char **argv) //passo la tolleranza
 {
-    chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
+    /*chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
     double tolInput=stod(argv[1]);
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
@@ -22,7 +22,7 @@ int main(int argc, char **argv) //passo la tolleranza
     }
     vector<Trace> vecTraces=findTraces(vec,tol);
     printGlobalResults("results", vecTraces);
-    printLocalResults("lresults",vec,vecTraces);
+    printLocalResults("lresults",vec,vecTraces);*/
 
 
     //prova findTraces
@@ -35,11 +35,11 @@ int main(int argc, char **argv) //passo la tolleranza
     }*/
 
 
-    chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
+    /*chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();
-    cout<<"Tempo impiegato: "<<duration<<endl;
+    cout<<"Tempo impiegato: "<<duration<<endl;*/
 
-    vector<Trace> vecProvaMS(5);
+    /*vector<Trace> vecProvaMS(5);
     Trace t1;
     t1.idTr=0;
     t1.length=5.0;
@@ -62,11 +62,8 @@ int main(int argc, char **argv) //passo la tolleranza
     vecProvaMS.push_back(t3);
     vecProvaMS.push_back(t4);
     vecProvaMS.push_back(t5);
-    detail::mergesort(idProvaMS, vecProvaMS,0,3);
-    cout<<idProvaMS[0];
-    cout<<idProvaMS[1];
-    cout<<idProvaMS[2];
-    cout<<idProvaMS[3];
+    detail::mergesort(idProvaMS, vecProvaMS,0,3);*/
+
 
     return 0;
 }

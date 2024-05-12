@@ -600,8 +600,9 @@ void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_
 
     assert(k == (right - left + 1));
 
-    for (size_t h = left; h <= right; h++)
+    for (size_t h = left; h <= right; h++){
         vecIdTraces[h] = tmp[h-left];
+    }
 }
 
 //template<typename T>
@@ -626,7 +627,7 @@ void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, s
 void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 {
     if (data.size()>0){ //va aggiunto il controllo perché se data.size()=0 avrei come right -1 (ma size_t non può essere negativo)
-        detail::mergesort(data, traces, 0, data.size()-1);
+        mergesort(data, traces, 0, data.size()-1);
     }
 }
 

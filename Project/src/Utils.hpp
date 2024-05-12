@@ -31,9 +31,9 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
 }
 
 namespace detail{
-void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t center, size_t right);
+void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t center, size_t right);//T
 void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t right);//T
-void mergesort(vector<unsigned int>& data, const vector<Trace>& traces);
+void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 }
 
 #endif
