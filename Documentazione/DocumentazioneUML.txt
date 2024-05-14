@@ -11,11 +11,10 @@ class Fracture
 
 ..Non member functions ..
 + bool readFractures(string&,vector<Fracture>&,double)
-+ void printLocalResults (string&,vector<Fracture>&,vector<Trace>&)
++ void printLocalResults(string&,vector<Fracture>&,vector<Trace>&)
 
 ..TEST FRACTURE..
 TestReadFractures
-TestPrintLocalResults
 
 }
 
@@ -26,16 +25,16 @@ class Trace
 + fracturesIds: array<unsigned int,2>
 + length: double
 + Tips: array<bool,2>
-+ PassThrough: array<bool,2>
++ onThePlane: array<bool,2>
++ intPoints: array<Vector3d,4>
 
 
 ..Non member functions ..
 + vector<Trace> findTraces(vector<Fracture>,double)
-+ void printGlobalResults (string&,vector<Trace>&)
++ void printGlobalResults(string&,vector<Trace>&)
 ..TEST TRACE..
 NOMITEST
 TestFindTraces
-TestPrintGlobalResults
 }
 }
 
@@ -79,6 +78,27 @@ TestMergesort
 }
 detail_functions..> Trace
 }
+
+package PolygonalMeshLibrary <<Folder>>{
+Class PolygonalMesh{
++ numVertices: unsigned int
++ idVertices: vector<unsigned int>
++ coordVertices: vector<Vector3d>
++ numEdges: unsigned int
++ idEdges: vector<unsigned int>
++ extremitiesEdges: vector<array<unsigned int,2>>
++ numPolygons: unsigned int
++ verticesPolygons: vector<vector<unsigned int>>
++ edgesPolygons: vector<vector<unsigned int>>
+
+..Non member functions ..
++ vector<PolygonalMesh> cutFractures(vector<Fracture>&,vector<Trace>&)
++ void makeCuts(Fracture&,vector<Trace>&)
+
+}
+}
+
+PolygonalMesh "1"--o "1" Fracture :cut
 
 
 @enduml

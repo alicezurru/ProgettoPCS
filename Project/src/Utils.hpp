@@ -4,6 +4,7 @@
 #include <Eigen/Eigen>
 #include <vector>
 #include "Fractures.hpp"
+#include "PolygonalMesh.hpp"
 #include <cmath>
 
 
@@ -34,6 +35,11 @@ namespace detail{
 void merge(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t center, size_t right);//T
 void mergesort(vector<unsigned int>& vecIdTraces, const vector<Trace>& traces, size_t left, size_t right);//T
 void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
+}
+
+namespace PolygonalMeshLibrary{
+vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces);
+void makeCuts (const Fracture& fr, vector <Trace>& traces);
 }
 
 #endif

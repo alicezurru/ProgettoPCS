@@ -1,6 +1,7 @@
 
 #include "Fractures.hpp"
 #include "Utils.hpp"
+#include "PolygonalMesh.hpp"
 
 #include<iostream>
 #include<sstream>
@@ -87,8 +88,9 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                 //prima cerco centro (facendo la media dei vertici) e raggio (massima distanza tra il centro e i vertici) delle bounding box
                 bool pass = passBoundingBox(fractures[i],fractures[j]);
                 if(pass){ //vado avanti solo se il controllo della
-//                    bounding box non è passato (se le due probabilmente si intersecano)
-                    array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione
+                //bounding box non è passato (se le due probabilmente si intersecano)
+                    array<Vector3d,4> intPoints;//qui metterò i potenziali punti di intersezione.
+                    //Li tengo comunque memorizzati perché mi serviranno nella parte 2
                     array<bool,2> onThePlane;
                     bool passIntPlane = findIntersectionPoints(fractures[i],fractures[j],intPoints,tol, onThePlane);
                     if(passIntPlane){//ora vedo se c'è effettivamente intersezione
@@ -114,7 +116,8 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                             tr.fracturesIds = {fractures[i].idFrac,fractures[j].idFrac};
                             tr.length=len;
                             tr.Tips=tips;
-                            tr.passThrough=onThePlane;
+                            tr.onThePlane=onThePlane;
+                            tr.intPoints=intPoints; //per la parte 2
                             listTraces.push_back(tr);//inserisco la traccia ora creata nella lista
                             if(tips[0]){ //e nel vettore corrispondente nella frattura
                                 fractures[i].notPassingTraces.push_back(tr.idTr);
@@ -632,6 +635,19 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 }
 
 } // namespace detail
+
+namespace PolygonalMeshLibrary{
+//vettore di PolygonalMesh dove a ogni frattura ne corrisponde una (nella stessa posizione)
+vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces){
+    vector <PolygonalMesh> vec (fractures.size());
+    return vec;
+}
+
+void makeCuts (const Fracture& fr, vector <Trace>& traces){
+
+}
+
+}
 
 
 
