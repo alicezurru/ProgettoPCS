@@ -16,7 +16,7 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR362_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
@@ -25,15 +25,13 @@ int main(int argc, char **argv) //passo la tolleranza
     printLocalResults("lresults",vec,vecTraces);*/
 
 
-    //prova findTraces
-    /*vector<Trace> vecTraces=findTraces(vec,tol);
-    cout << "Numero tracce: " << vecTraces.size() << endl;
-    for (Trace& tr : vecTraces){
-        cout << "Traccia: " << " id " << tr.idTr << ", Frattura1 "<<tr.fracturesIds[0]<<", Frattura2 "<<tr.fracturesIds[1]<<endl;
-        cout<<tr.Tips[0]<<tr.Tips[1]<<endl;
-
-    }*/
-
+    double tol=10*numeric_limits<double>::epsilon();
+    vector<Fracture> vec;
+    string path="./DFN";
+    bool flag=readFractures(path+"/FR5_data_prova.txt",vec, tol);
+    vector<Trace> vecTraces=findTraces(vec,tol);
+    printGlobalResults("results", vecTraces);
+    printLocalResults("lresults",vec,vecTraces);
 
     /*chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();

@@ -31,6 +31,26 @@ TEST(FRACTURESTEST, TestReadingFractures){
     EXPECT_TRUE(areVectorsEqual(vec[0].vertices[2],Vector3d(1,1,0),tol));
     EXPECT_TRUE(areVectorsEqual(vec[0].vertices[3],Vector3d(0,1,0),tol));
 }
+
+TEST(FRACTURETEST, TestFindTraces){
+    //uso un file creato da noi (FR5_data_prova) e testo i risultati con quelli che conosciamo a priori
+    double tol=10*numeric_limits<double>::epsilon();
+    vector<Fracture> vec;
+    readFractures("./DFN/FR5_data_prova.txt",vec, tol);
+    vector<Trace> vecTraces=findTraces(vec,tol);
+    array<bool, 2> traces_ok;
+    EXPECT_EQ(vecTraces.size(), 4);
+    traces_ok={false, false};
+    EXPECT_EQ(vecTraces[0].Tips, traces_ok);
+    traces_ok={true, false};
+    EXPECT_EQ(vecTraces[1].Tips, traces_ok);
+    EXPECT_EQ(vecTraces[2].Tips, traces_ok);
+    EXPECT_EQ(vecTraces[3].Tips, traces_ok);
+    //così controlliamo i tips. Le estremità le avevamo già controllate in TestFindIntersectionPoints e TestFindInternalPoints
+    //abbiamo comunque controllato a mano che fossero giuste.
+
+}
+
 }
 
 namespace Algebra{
