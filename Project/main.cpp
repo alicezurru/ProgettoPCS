@@ -28,10 +28,10 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=10*numeric_limits<double>::epsilon();
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR5_data_prova.txt",vec, tol);
+    bool flag=readFractures(path+"/FR50_data.txt",vec, tol);
     vector<Trace> vecTraces=findTraces(vec,tol);
-    printGlobalResults("results", vecTraces);
-    printLocalResults("lresults",vec,vecTraces);
+    printGlobalResults("results.txt", vecTraces);
+    printLocalResults("lresults.txt",vec,vecTraces);
 
     /*chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();

@@ -152,8 +152,8 @@ void printGlobalResults (const string& fileName, vector<Trace>& traces){ //primo
     ofstream ofstr(fileName); //se il file non esiste, lo crea
     ofstr << "# Number of Traces" << endl;
     ofstr << traces.size() << endl;
+    ofstr << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
     for (Trace& tr:traces){
-        ofstr << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
         ofstr << tr.idTr << "; " << tr.fracturesIds[0] << "; " << tr.fracturesIds[1] << "; " << (tr.extremitiesCoord[0])[0] << "; "
               << (tr.extremitiesCoord[0])[1] << "; " << (tr.extremitiesCoord[0])[2] << "; " << (tr.extremitiesCoord[1])[0] << "; "
               << (tr.extremitiesCoord[1])[1] << "; " << (tr.extremitiesCoord[1])[2] << endl;
@@ -164,19 +164,27 @@ void printGlobalResults (const string& fileName, vector<Trace>& traces){ //primo
 void printLocalResults (const string& fileName,const vector<Fracture>& fractures, const vector<Trace>& traces){
     //secondo file di ouput, con le informazioni sulle fratture e sulle tracce corrispondenti
     ofstream ofstr(fileName);
+    bool firstTime;
     for (Fracture fr:fractures){
         if (fr.idFrac!=-1){ //non gestisco quelle eventualmente problematiche
+            firstTime=true;
             ofstr << "# FractureId; NumTraces" << endl;
             ofstr << fr.idFrac << "; " << (fr.passingTraces.size())+(fr.notPassingTraces.size()) << endl;
             mergesort(fr.passingTraces, traces); //ordino le tracce passanti per lunghezza decrescente (chiamo quella fuori dal namespace details così da ordinarlo tutto)
             mergesort(fr.notPassingTraces, traces); //ordino le tracce non passanti per lunghezza decrescente
             for (unsigned int trId:fr.passingTraces){
-                ofstr << "# TraceId; Tips; Length" << endl;
+                if (firstTime){
+                     ofstr << "# TraceId; Tips; Length" << endl;
+                    firstTime=false;
+                }
                 ofstr << trId << "; " << "false; " << traces[trId].length << endl; //sto stampando prima tutte quelle passanti, quindi avranno tutte tips=false
 
             }
             for (unsigned int trId:fr.notPassingTraces){
-                ofstr << "# TraceId; Tips; Length" << endl;
+                if (firstTime){
+                    ofstr << "# TraceId; Tips; Length" << endl;
+                    firstTime=false;
+                }
                 ofstr << trId << "; " << "true; " << traces[trId].length << endl; //sto stampando prima tutte quelle non passanti, quindi avranno tutte tips=true
             }
         }
