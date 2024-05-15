@@ -117,7 +117,6 @@ vector<Trace> findTraces(vector<Fracture>& fractures, double tol){ //date tutte 
                             tr.length=len;
                             tr.Tips=tips;
                             tr.onThePlane=onThePlane;
-                            tr.intPoints=intPoints; //per la parte 2
                             listTraces.push_back(tr);//inserisco la traccia ora creata nella lista
                             if(tips[0]){ //e nel vettore corrispondente nella frattura
                                 fractures[i].notPassingTraces.push_back(tr.idTr);
@@ -566,11 +565,8 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
 }
 
 Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2){
-    //y=mx+q
-    double m1=(line1[1][1]-line1[0][1])/(line1[1][0]-line1[0][0]);
-    double q1=line1[0][1]-m1*line1[0][0];
-    double m2=(line2[1][1]-line2[0][1])/(line2[1][0]-line2[0][0]);
-    double q2=line2[0][1]-m2*line2[0][0];
+   //r: p=p1+t(p2-p1)
+
 
 
 }
