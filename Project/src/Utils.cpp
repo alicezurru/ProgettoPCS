@@ -161,11 +161,11 @@ void printGlobalResults (const string& fileName, vector<Trace>& traces){ //primo
     ofstr.close();
 }
 
-void printLocalResults (const string& fileName,const vector<Fracture>& fractures, const vector<Trace>& traces){
+void printLocalResults (const string& fileName, vector<Fracture>& fractures, const vector<Trace>& traces){
     //secondo file di ouput, con le informazioni sulle fratture e sulle tracce corrispondenti
     ofstream ofstr(fileName);
     bool firstTime;
-    for (Fracture fr:fractures){
+    for (Fracture& fr:fractures){
         if (fr.idFrac!=-1){ //non gestisco quelle eventualmente problematiche
             firstTime=true;
             ofstr << "# FractureId; NumTraces" << endl;
@@ -565,7 +565,15 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
 
 }
 
+Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2){
+    //y=mx+q
+    double m1=(line1[1][1]-line1[0][1])/(line1[1][0]-line1[0][0]);
+    double q1=line1[0][1]-m1*line1[0][0];
+    double m2=(line2[1][1]-line2[0][1])/(line2[1][0]-line2[0][0]);
+    double q2=line2[0][1]-m2*line2[0][0];
 
+
+}
 
 }
 
@@ -646,12 +654,157 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 
 namespace PolygonalMeshLibrary{
 //vettore di PolygonalMesh dove a ogni frattura ne corrisponde una (nella stessa posizione)
-vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces){
+vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol){
     vector <PolygonalMesh> vec (fractures.size());
+    for (Fracture& fr:fractures){
+        unsigned int countIdV=0;
+        PolygonalMesh mesh;
+        list<Vector3d> verticesMesh; //a priori non so quanti saranno. Faccio una lista che poi copierò in un vettore
+        list<unsigned int> idVerticesMesh;
+        if (fr.idFrac!=-1){//escludo quelle problematiche
+            list<Trace> allTraces;
+            for (auto it=fr.passingTraces.begin(); it!=fr.passingTraces.end(); it++){
+                allTraces.push_back(traces[*it]);
+            }
+            for (auto it=fr.notPassingTraces.begin(); it!=fr.passingTraces.end(); it++){
+                allTraces.push_back(traces[*it]);
+            }
+        }
+        //inserisco nella mesh i vertici della frattura (poi aggiungerò man mano quelli che trovo con i tagli)
+        for (unsigned int i=0; i<fr.numVertices; i++){
+            verticesMesh.push_back(fr.vertices[i]);
+            idVerticesMesh.push_back(countIdV);
+            countIdV++;
+        }
+
+    }
     return vec;
 }
+                                                           //gli passo anche la mesh?
+void makeCuts (list<Vector3d>& vertices, list<Trace>& traces, double tol, int idFrac, PolygonalMesh& mesh, unsigned int& countIdV,
+              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh){
+    //prende in input la lista con i vertici correnti del sottopoligono che deve ancora essere tagliato dalle tracce memorizzate in traces
+    //scelgo di usare una lista perché, man mano che taglio il sottopoligono, si creano altri vertici che possono essere in mezzo a quelli
+    //precedenti; inoltre non so a priori quanti saranno. Anche per le tracce uso una lista perché dovrò poi toglierle dalla testa man mano
+    //che taglio il sottopoligono.
+    //Vediamo da che parte della retta passante per la traccia sta il primo vertice
+    bool firstVertex;
+    bool previous;
+    bool current;
+    bool firstFracture;
+    Vector3d previousVertex; //per capire quale dei due intPoints relativi alla frattura prendere (vedo quale sta sul lato tra i due vertici successivi)
+    list<Vector3d> subvertices1; //ci memorizzo i vertici del primo sottopoligono dato dal taglio della prima traccia
+    list<Vector3d> subvertices2;
+    list<Trace> ;
+    //PRIMA DI QUESTO FAI IL CONTROLLO CHE IL PROD VETTORIALE NON SIA 0 (CASO PARTICOLARE)
+    Vector3d vecOnTheTrace=traces.front().extremitiesCoord[0]-traces.front().extremitiesCoord[1];
+    previousVertex=vertices.front();
+    firstVertex = findSideOfTheLine(vecOnTheTrace, previousVertex-traces.front().extremitiesCoord[0], tol);
+    subvertices1.push_back(previousVertex);
+    previous=firstVertex;
+    //guardo per quella traccia se la frattura corrente è la prima o la seconda (per sapere quali intPoints prendere)
+    if(idFrac==traces.front().fracturesIds[0]){
+        firstFracture=true;
+    }
+    for (Vector3d& v:vertices){
+        current = findSideOfTheLine(vecOnTheTrace,v-traces.front().extremitiesCoord[0],tol);
+        if (current != previous){//aggiungo il vertice preso da intPoints a entrambi i sottopoligoni
+            //cerco il vertice giusto da aggiungere
+            if(firstFracture){ //so che è uno dei primi due punti di intPoints (quello sul lato corrente)
+                if(abs((traces.front().intPoints[0]-previousVertex).dot(v-previousVertex))<tol){
+                    verticesMesh.push_back(traces.front().intPoints[0]);
+                    idVerticesMesh.push_back(countIdV);
+                    countIdV++;
+                    subvertices1.push_back(traces.front().intPoints[0]);
+                    subvertices2.push_back(traces.front().intPoints[0]);
+                }
+                if(abs((traces.front().intPoints[1]-previousVertex).dot(v-previousVertex))<tol){
+                    verticesMesh.push_back(traces.front().intPoints[1]);
+                    idVerticesMesh.push_back(countIdV);
+                    countIdV++;
+                    subvertices1.push_back(traces.front().intPoints[1]);
+                    subvertices2.push_back(traces.front().intPoints[1]);
+                }
 
-void makeCuts (const Fracture& fr, vector <Trace>& traces){
+            }
+            else{
+                if(abs((traces.front().intPoints[2]-previousVertex).dot(v-previousVertex))<tol){
+                    verticesMesh.push_back(traces.front().intPoints[2]);
+                    idVerticesMesh.push_back(countIdV);
+                    countIdV++;
+                    subvertices1.push_back(traces.front().intPoints[2]);
+                    subvertices2.push_back(traces.front().intPoints[2]);
+                }
+                if(abs((traces.front().intPoints[3]-previousVertex).dot(v-previousVertex))<tol){
+                    verticesMesh.push_back(traces.front().intPoints[3]);
+                    idVerticesMesh.push_back(countIdV);
+                    countIdV++;
+                    subvertices1.push_back(traces.front().intPoints[3]);
+                    subvertices2.push_back(traces.front().intPoints[3]);
+                }
+
+            }
+        }
+        //controllo da che parte sta il vertice corrente (se dalla stessa del primo o dall'altra) e lo salvo nella lista di subvertices corrispondente
+        //questo va fatto in entrambi i casi (sia current == previous sia !=)
+        if(current==firstVertex){
+            subvertices1.push_back(v);
+        }
+        else{
+            subvertices2.push_back(v);
+        }
+
+        previousVertex=v;
+    }
+
+    /*if((coeff1.cross(coeff2)).squaredNorm()>tol2){ //i piani sono paralleli se hanno normali parallele
+        //posizione dei punti del poligono 2 rispetto al piano 1
+        bool positive=false; //per segnalare se il vertice analizzato in questo momento sta "sopra" (true) o "sotto"(false) il piano
+        bool previous=false;
+        if ((f2.vertices[0]).dot(coeff1)+d1>tol){
+            previous=true;//vedo se si comincia "sopra" o "sotto"
+        }
+        unsigned int count1=0; //conto quanti vertici stanno dall'altra parte
+        unsigned int firstVertexOtherSide2=0;
+        onThePlane[1] = false; //metto anche il caso in cui si toccano senza che uno passi attraverso l'altro
+        for (unsigned int i=1; i<f2.numVertices; i++){
+            if(abs((f2.vertices[i]).dot(coeff1)+d1)<tol){
+                //se ne ho due di fila sul piano, ho traccia particolare in cui uno non passa attraverso l'altro
+                if(abs((f2.vertices[(i+1)%f2.numVertices]).dot(coeff1)+d1)<tol){
+                    onThePlane[1]=true;
+                    intPoints[2]=f2.vertices[i];
+                    intPoints[3]=f2.vertices[(i+1)%f2.numVertices];
+                    break;
+                }
+                else if(abs((f2.vertices[(i-1)%f2.numVertices]).dot(coeff1)+d1)<tol){
+                    onThePlane[1]=true;
+                    intPoints[2]=f2.vertices[(i-1)%f2.numVertices];
+                    intPoints[3]=f2.vertices[i];
+                    break;
+                }
+
+            }
+            if ((f2.vertices[i]).dot(coeff1)+d1>tol){ //vedo da che parte stanno i vertici
+                positive=true;
+            }
+            else {
+                positive=false;
+            }
+            if((previous!=positive) && (count1!=0)){
+                break; //non è necessario andare avanti: saranno tutti di nuovo dalla prima parte
+
+            }
+            if ((previous!=positive) && (count1==0)){ //si incontra un vertice dall'altra parte per la prima volta
+                firstVertexOtherSide2=i;
+                count1++;
+            }
+            if((previous==positive) && (count1!=0)){ //conto quanti stanno dall'altra parte
+                count1++;
+            }
+
+            previous=positive;
+        }
+    }*/
 
 }
 

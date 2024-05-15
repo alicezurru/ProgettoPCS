@@ -29,6 +29,18 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
         return true;
     return false;
 }
+inline bool findSideOfTheLine (const Vector3d& vecLine, const Vector3d& vecToTest, double tol){
+    bool flag=false;
+    Vector3d v=Vector3d(1,0,0); //prendo un vettore ausiliario non parallelo a quello sulla traccia
+    if (abs(v.dot(vecLine))<tol){
+        v=Vector3d(0,1,0);
+    }
+    Vector3d n = vecLine.cross(v);
+    if (vecToTest.dot(n)>tol){
+        flag=true;
+    }
+    return flag;
+}
 }
 
 namespace detail{
@@ -38,8 +50,8 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 }
 
 namespace PolygonalMeshLibrary{
-vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces);
-void makeCuts (const Fracture& fr, vector <Trace>& traces);
+vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
+void makeCuts (list<Vector3d>& vertices, list<Trace>& traces, double tol, int idFrac, PolygonalMesh& mesh, unsigned int& countIdV);
 }
 
 #endif
