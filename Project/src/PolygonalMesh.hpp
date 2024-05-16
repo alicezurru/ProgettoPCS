@@ -20,8 +20,8 @@ struct PolygonalMesh{
     vector<array<unsigned int, 2>> extremitiesEdges; //sono id, non serve fare operazioni matematiche
 
     unsigned int numPolygons;
-    vector<vector<unsigned int>> verticesPolygons; //non so a priori quanti sono
-    vector<vector<unsigned int>> edgesPolygons;
+    list<vector<unsigned int>> verticesPolygons; //non so a priori quanti sono e non mi serve accedere per indice (non hanno id)
+    list<vector<unsigned int>> edgesPolygons;
 
 
 };

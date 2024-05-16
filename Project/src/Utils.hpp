@@ -15,7 +15,7 @@ namespace Geometry{
 bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);//T
 vector<Trace> findTraces(vector<Fracture>& fractures, double tol);
 void printGlobalResults (const string& fileName, vector<Trace>& traces);
-void printLocalResults (const string& fileName,const vector<Fracture>&fractures, const vector<Trace>& traces);
+void printLocalResults (const string& fileName, vector<Fracture>&fractures, const vector<Trace>& traces);
 }
 
 namespace Algebra{
@@ -41,6 +41,7 @@ inline bool findSideOfTheLine (const Vector3d& vecLine, const Vector3d& vecToTes
     }
     return flag;
 }
+Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);
 }
 
 namespace detail{
@@ -51,7 +52,8 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 
 namespace PolygonalMeshLibrary{
 vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
-void makeCuts (list<Vector3d>& vertices, list<Trace>& traces, double tol, int idFrac, PolygonalMesh& mesh, unsigned int& countIdV);
+void makeCuts (list<Vector3d>& vertices,list<vector<unsigned int>> verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
+              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh);
 }
 
 #endif
