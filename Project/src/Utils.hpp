@@ -6,6 +6,7 @@
 #include "Fractures.hpp"
 #include "PolygonalMesh.hpp"
 #include <cmath>
+#include <queue>
 
 
 using namespace std;
@@ -52,8 +53,9 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 
 namespace PolygonalMeshLibrary{
 vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
-void makeCuts (list<Vector3d>& vertices,list<vector<unsigned int>> verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
-              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh);
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
+              queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+              list<array<unsigned int,2>> edgesMesh,list<unsigned int> idEdgesMesh);
 }
 
 #endif

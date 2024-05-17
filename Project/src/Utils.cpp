@@ -11,6 +11,7 @@
 #include <functional> //per le lambda function
 #include <list>
 #include <cassert> //per mergesort
+#include <queue>
 
 
 using namespace std;
@@ -659,37 +660,83 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
     vector <PolygonalMesh> vec (fractures.size());
     for (Fracture& fr:fractures){
         unsigned int countIdV=0;
+        unsigned int countIdE=0;
         PolygonalMesh mesh;
         list<Vector3d> verticesMesh; //a priori non so quanti saranno. Faccio una lista che poi copierò in un vettore
         list<unsigned int> idVerticesMesh;
+        list<array<unsigned int,2>> edgesMesh;
+        list<unsigned int> idEdgesMesh;
+
+        queue<Vector3d> vertices;//coda perchè mi serve solo inserire e riprendere nello stesso ordine (senso antiorario)
+        queue<unsigned int> verticesId;
+        queue<array<unsigned int,2>> edges;
+        queue<unsigned int> edgesId;
         if (fr.idFrac!=-1){//escludo quelle problematiche
-            list<Trace> allTraces;
+            queue<Trace> allTraces;
             for (auto it=fr.passingTraces.begin(); it!=fr.passingTraces.end(); it++){
-                allTraces.push_back(traces[*it]);
+                allTraces.push(traces[*it]);
             }
             for (auto it=fr.notPassingTraces.begin(); it!=fr.passingTraces.end(); it++){
-                allTraces.push_back(traces[*it]);
+                allTraces.push(traces[*it]);
             }
-            //inserisco nella mesh i vertici della frattura (poi aggiungerò man mano quelli che trovo con i tagli)
+            //inserisco nella mesh i vertici e i lati della frattura (poi aggiungerò man mano quelli che trovo con i tagli)
             for (unsigned int i=0; i<fr.numVertices; i++){
+                //vertici
+                vertices.push(fr.vertices[i]);
+                verticesId.push(countIdV);
                 verticesMesh.push_back(fr.vertices[i]);
                 idVerticesMesh.push_back(countIdV);
+                //lati
+                array<unsigned int,2> edge={countIdV,(countIdV+1)%fr.numVertices};
+                edges.push(edge);
+                edgesMesh.push_back(edge);
+                edgesId.push(countIdE);
+                idEdgesMesh.push_back(countIdE);
                 countIdV++;
+                countIdE++;
             }
 
-
             //do il via ai tagli ricorsivi
-            //controlla poi verticesmesh se è ok
-            makeCuts(verticesMesh,idVerticesMesh, allTraces,tol,mesh,countIdV,verticesMesh,idVerticesMesh);
+            makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,edges,edgesId,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh);
 
+
+            //trasformo le liste di verticesMesh e idVerticesMesh in vettori e le aggiungo alla mesh+il numero
+            vector<Vector3d> verticesMeshV;
+            vector<unsigned int> idVerticesMeshV;
+            idVerticesMeshV.reserve(countIdV);
+            verticesMeshV.reserve(countIdV);
+            for(unsigned int i=0;i<countIdV;i++){
+                verticesMeshV.push_back(verticesMesh.front());
+                verticesMesh.pop_front();
+                idVerticesMeshV.push_back(idVerticesMesh.front());
+                idVerticesMesh.pop_front();
+            }
+            mesh.numVertices=countIdV;
+            mesh.idVertices=idVerticesMeshV;
+            mesh.coordVertices=verticesMeshV;
+
+            //anche per i lati
+            vector<array<unsigned int,2>> edgesMeshV;
+            vector<unsigned int> idEdgesMeshV;
+            idEdgesMeshV.reserve(countIdE);
+            edgesMeshV.reserve(countIdE);
+            for(unsigned int i=0;i<countIdE;i++){
+                edgesMeshV.push_back(edgesMesh.front());
+                edgesMesh.pop_front();
+                idEdgesMeshV.push_back(idEdgesMesh.front());
+                idEdgesMesh.pop_front();
+            }
+            mesh.numEdges=countIdE;
+            mesh.idEdges=idEdgesMeshV;
+            mesh.extremitiesEdges=edgesMeshV;
         }
 
     }
     return vec;
 }
-                                                           //gli passo anche la mesh?
-void makeCuts (list<Vector3d>& vertices, list<vector<unsigned int>> verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
-              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh){
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
+              queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+              list<array<unsigned int,2>> edgesMesh,list<unsigned int> idEdgesMesh){
     //prende in input la lista con i vertici correnti del sottopoligono che deve ancora essere tagliato dalle tracce memorizzate in traces
     //scelgo di usare una lista perché, man mano che taglio il sottopoligono, si creano altri vertici che possono essere in mezzo a quelli
     //precedenti; inoltre non so a priori quanti saranno. Anche per le tracce uso una lista perché dovrò poi toglierle dalla testa man mano
@@ -699,67 +746,88 @@ void makeCuts (list<Vector3d>& vertices, list<vector<unsigned int>> verticesId, 
         bool firstVertex;
         bool previous;
         bool current;
-        Vector3d previousVertex; //per capire quale dei due intPoints relativi alla frattura prendere (vedo quale sta sul lato tra i due vertici successivi)
-        list<Vector3d> subvertices1; //ci memorizzo i vertici del primo sottopoligono dato dal taglio della prima traccia
-        list<Vector3d> subvertices2;
-        list<unsigned int> subverticesId1;//poi nella mesh memorizzo gli id per ogni poligono
-        list<unsigned int> subverticesId2;
-        list<Trace> subtraces1;
-        list<Trace> subtraces2;
+        Vector3d previousVertex;
+        queue<Vector3d> subvertices1; //ci memorizzo i vertici del primo sottopoligono dato dal taglio della prima traccia
+        queue<Vector3d> subvertices2; //poi per metterle nella mesh TRASFORMA IN VECTOR
+        queue<unsigned int> subverticesId1;//poi nella mesh memorizzo gli id per ogni poligono
+        queue<unsigned int> subverticesId2;
+        queue<array<unsigned int,2>> subedges1;
+        queue<array<unsigned int,2>> subedges2;
+        queue<unsigned int> subedgesId1;
+        queue<unsigned int> subedgesId2;//LAVORA SUI LATI
+        queue<Trace> subtraces1;
+        queue<Trace> subtraces2;
         //PRIMA DI QUESTO FAI IL CONTROLLO CHE IL PROD VETTORIALE NON SIA 0 (CASO PARTICOLARE)
         Vector3d vecOnTheTrace=traces.front().extremitiesCoord[0]-traces.front().extremitiesCoord[1];
         previousVertex=vertices.front();
         firstVertex = findSideOfTheLine(vecOnTheTrace, previousVertex-traces.front().extremitiesCoord[0], tol);
-        subvertices1.push_back(previousVertex);
+        subvertices1.push(previousVertex);
         previous=firstVertex;
-        array<Vector3d,2> lineTrace = traces.front().extremitiesCoord;
-        for (Vector3d& v:vertices){
+        Vector3d lineTrace = traces.front().extremitiesCoord[0]-traces.front().extremitiesCoord[1];//o 1-0???
+        for (unsigned int i=0;i<vertices.size();i++){
+            Vector3d v=vertices.front();
             current = findSideOfTheLine(vecOnTheTrace,v-traces.front().extremitiesCoord[0],tol);
             if (current != previous){//aggiungo il nuovo vertice ad entrambi i sottopoligoni
                 //trovo il nuovo vertice: intersezione tra prolungamento della traccia e lato
                 array<Vector3d,2> lineEdge = {v,previousVertex};
-                Vector3d intersection = intersectionLines(lineTrace,lineEdge);
+                Vector3d intersection = intersectionLines(traces.front().extremitiesCoord,lineEdge);
                 verticesMesh.push_back(intersection);
                 idVerticesMesh.push_back(countIdV);
-                subverticesId1.push_back(countIdV);
-                subverticesId2.push_back(countIdV);
+                subverticesId1.push(countIdV);
+                subverticesId2.push(countIdV);
                 countIdV++;
-                subvertices1.push_back(intersection);
-                subvertices2.push_back(intersection);
+                subvertices1.push(intersection);
+                subvertices2.push(intersection);
             }
             //controllo da che parte sta il vertice corrente (se dalla stessa del primo o dall'altra) e lo salvo nella lista di subvertices corrispondente
             //questo va fatto in entrambi i casi (sia current == previous sia !=)
             if(current==firstVertex){
-                subvertices1.push_back(v);
-                //id?
+                subvertices1.push(v);
+                subverticesId1.push(verticesId.front());
+                verticesId.pop();
 
             }
             else{
-                subvertices2.push_back(v);
+                subvertices2.push(v);
+                subverticesId2.push(verticesId.front());
+                verticesId.pop();
+
             }
 
             previousVertex=v;
+            vertices.pop();
         }
         //ora controllo da che parte stanno le tracce rimanenti
-        traces.pop_front(); //tolgo la prima traccia: ho già tagliato
-        for(Trace& t:traces){
-            if((findSideOfTheLine(lineTrace,t.extremitiesCoord[0],tol)==firstVertex)&&(findSideOfTheLine(lineTrace,t.extremitiesCoord[1],tol)==firstVertex)){
-                subtraces1.push_back(t);
+        traces.pop(); //tolgo la prima traccia: ho già tagliato
+        for(unsigned int i=0;i<traces.size();i++){
+            Trace t=traces.front();
+            if((findSideOfTheLine(lineTrace,traces.front().extremitiesCoord[0],tol)==firstVertex)&&(findSideOfTheLine(lineTrace,traces.front().extremitiesCoord[1],tol)==firstVertex)){
+                subtraces1.push(t);
             }
             else if((findSideOfTheLine(lineTrace,t.extremitiesCoord[0],tol)!=firstVertex)&&(findSideOfTheLine(lineTrace,t.extremitiesCoord[1],tol)!=firstVertex)){
-                subtraces2.push_back(t);
+                subtraces2.push(t);
             }
             else{//la traccia ha tagliato quest'altra traccia
-                subtraces1.push_back(t);
-                subtraces2.push_back(t);
+                subtraces1.push(t);
+                subtraces2.push(t);
             }
+            traces.pop();
         }
         //ricorsione:
-        makeCuts(subvertices1,subtraces1,tol,mesh,countIdV,verticesMesh,idVerticesMesh);
-        makeCuts(subvertices2,subtraces2,tol,mesh,countIdV,verticesMesh,idVerticesMesh);
+        makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,subedges1,subedgesId1,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh);
+        makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,subedges1,subedgesId1,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh);
 
     }
     else{//vuol dire che per questo sottopoligono ho finito di tagliare
+        //trasformo la coda in vettore e la aggiungo alla mesh
+        vector<unsigned int> v;
+        v.reserve(verticesId.size());
+        for(unsigned int i=0;i<verticesId.size();i++){
+            v.push_back(verticesId.front());
+            verticesId.pop();
+        }
+        mesh.verticesPolygons.push_back(v);
+        //stessa cosa per i lati
 
     }
 }
