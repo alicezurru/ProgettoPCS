@@ -101,6 +101,7 @@ Class PolygonalMesh{
 + void makeCuts(queue<Vector3d>&,queue<unsigned int>&,queue<Trace>&,double,PolygonalMesh&,
 unsigned int&,unsigned int&,queue<array<unsigned int,2>>&,queue<unsigned int>&,
 list<Vector3d>&,list<unsigned int>&,list<array<unsigned int,2>>,list<unsigned int>)
++ void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,queue<array<unsigned int,2>>&, queue<unsigned int>&,list<array<unsigned int,2>>&,list<unsigned int>&,unsigned int&, queue<array<unsigned int,2>>&, queue<unsigned int>&,Vector3d,Vector3d,Vector3d,Vector3d,double)
 
 ..POLYGONALMESHTEST..
 ...
