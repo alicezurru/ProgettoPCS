@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace Geometry;
+using namespace PolygonalMeshLibrary;
 
 int main(int argc, char **argv) //passo la tolleranza
 {
@@ -28,10 +29,17 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=10*numeric_limits<double>::epsilon();
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR50_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR3_data.txt",vec, tol);
     vector<Trace> vecTraces=findTraces(vec,tol);
     printGlobalResults("results.txt", vecTraces);
     printLocalResults("lresults.txt",vec,vecTraces);
+
+    //provo parte 2
+    vector<PolygonalMesh> vecMesh = cutFractures(vec, vecTraces,tol);
+    //void printPolygonalMesh(const PolygonalMesh& mesh, const string& fileName);
+    for (unsigned int i=0; i<vecMesh.size(); i++){
+        printPolygonalMesh(vecMesh[i], "printMesh"+to_string(i));
+    }
 
     /*chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();

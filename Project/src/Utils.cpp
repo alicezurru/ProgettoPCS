@@ -655,8 +655,12 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces)
 namespace PolygonalMeshLibrary{
 //vettore di PolygonalMesh dove a ogni frattura ne corrisponde una (nella stessa posizione)
 vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol){
+    cout << "cut fractures called" << endl; //TOGLI
+
     vector <PolygonalMesh> vec (fractures.size());
     for (Fracture& fr:fractures){
+        cout << "test crash" << endl; //TOGLI
+
         unsigned int countIdV=0;
         unsigned int countIdE=0;
         PolygonalMesh mesh;
@@ -671,11 +675,11 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
         queue<unsigned int> edgesId;
         if (fr.idFrac!=-1){//escludo quelle problematiche
             queue<Trace> allTraces;
-            for (auto it=fr.passingTraces.begin(); it!=fr.passingTraces.end(); it++){
-                allTraces.push(traces[*it]);
+            for (unsigned int i=0; i<fr.passingTraces.size(); i++){
+                allTraces.push(traces[fr.passingTraces[i]]);
             }
-            for (auto it=fr.notPassingTraces.begin(); it!=fr.passingTraces.end(); it++){
-                allTraces.push(traces[*it]);
+            for (unsigned int j=0; j<fr.notPassingTraces.size(); j++){
+                allTraces.push(traces[fr.notPassingTraces[j]]);
             }
             //inserisco nella mesh i vertici e i lati della frattura (poi aggiungerò man mano quelli che trovo con i tagli)
             for (unsigned int i=0; i<fr.numVertices; i++){
@@ -739,6 +743,8 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
     //scelgo di usare una coda perché, man mano che taglio il sottopoligono, si creano altri vertici che andranno sempre aggiunti in coda a quelli
     //del nuovo sottopoligono; inoltre non so a priori quanti saranno. Anche per le tracce uso una coda perché dovrò poi toglierle dalla testa man mano
     //che taglio il sottopoligono.
+    cout << "makeCuts called" << endl; //TOGLI
+
     if(traces.size()!=0){
         //Vediamo da che parte della retta passante per la traccia sta il primo vertice (1 se sta da una parte, 0 dall'altra e -1 se è sulla retta)
         int first;
@@ -1325,7 +1331,32 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
     }
 }
 
-
+void printPolygonalMesh(const PolygonalMesh& mesh, const string& fileName){
+    ofstream ofstr(fileName);
+    ofstr << "#CELLS 0D" << endl;
+    ofstr << "#Id;x;y;z" << endl;
+    for (unsigned int i=0; i<mesh.numVertices; i++){
+        ofstr << mesh.idVertices[i] << ";" << mesh.coordVertices[0] << ";" << mesh.coordVertices[1] << ";" << mesh.coordVertices[2] << endl;
+    }
+    ofstr << "#CELLS 1D" << endl;
+    ofstr << "#Id;Origin;End" << endl;
+    for (unsigned int i=0; i<mesh.numEdges; i++){
+        ofstr << mesh.idEdges[i] << ";" << mesh.extremitiesEdges[i][0] << ";" << mesh.extremitiesEdges[i][1] << endl;
+    }
+    ofstr << "#CELLS 2D" << endl;
+    ofstr << "NumVertices;Vertices;NumEdges;Edges" << endl;
+    for (unsigned int i=0; i<mesh.numPolygons; i++){
+        ofstr << mesh.verticesPolygons.size();
+        for (unsigned int j=0; j<mesh.verticesPolygons.size(); j++){
+            ofstr <<";" << mesh.verticesPolygons[i][j];
+        }
+        ofstr << ";" << mesh.edgesPolygons.size();
+        for (unsigned int j=0; j<mesh.verticesPolygons.size(); j++){
+            ofstr <<";" << mesh.edgesPolygons[i][j];
+        }
+        ofstr << endl;
+    }
+}
 }
 
 
