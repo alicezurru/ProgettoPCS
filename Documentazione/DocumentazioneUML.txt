@@ -3,7 +3,7 @@ package Geometry <<Folder>>{
 
 class Fracture
 {
-+ idFrac: unsigned int
++ idFrac: int
 + numVertices: unsigned int 
 + vertices: vector<Vector3d>
 + passingTraces: vector<unsigned int>
