@@ -708,7 +708,7 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
             //do il via ai tagli ricorsivi
             cout<<"Primo make: ";
             makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,fr.idFrac,n);
-
+            cout << "FIN QUI OK" << endl;
 
             //trasformo le liste di verticesMesh e idVerticesMesh in vettori e le aggiungo alla mesh
             vector<Vector3d> verticesMeshV;
@@ -864,7 +864,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     subverticesId1.push(verticesId.front());
                     previousSide1=true;
                 }
-                else if (current != first && current !=-1 && first!=-1){ //&& first!=-1??
+                else if (current != first && current !=-1 && first!=-1){
                     //vertici
                     subvertices2.push(v);
                     subverticesId2.push(verticesId.front());
@@ -958,17 +958,58 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
     }
     else{//vuol dire che per questo sottopoligono ho finito di tagliare
         //trasformo la coda in vettore e la aggiungo alla mesh
-
+        //poi, se non esistono già, creo i lati e li aggiungo alla mesh
         vector<unsigned int> v1;
+        queue<unsigned int> edgesIdTemp; //li salvo prima tutti in una coda, controllando se non ci sono già e poi li metto nel vettore
         v1.reserve(sizeV);
+        unsigned int firstVId=verticesId.front(); //lo salvo per controllare anche l'ultimo lato
+        unsigned int previousVId=firstVId;
         for(unsigned int i=0;i<sizeV;i++){
             v1.push_back(verticesId.front());
+            array<unsigned int,2> currentEdge ={previousVId,verticesId.front()};
+            unsigned int end =mesh.extremitiesEdges.size();
+            for(unsigned int j=0; j<end; j++){
+                array<unsigned int,2>& alreadyEdge= mesh.extremitiesEdges[j];
+                if (currentEdge[0]==alreadyEdge[0] && currentEdge[1]==alreadyEdge[1]){//se il lato esiste già aggiungo quello
+                    edgesIdTemp.push(j);
+                }
+                else{ //altrimenti lo creo
+                    idEdgesMesh.push_back(countIdE);
+                    edgesMesh.push_back(currentEdge);
+                    edgesIdTemp.push(countIdE);
+                    countIdE++;
+                }
+            }
+            previousVId=verticesId.front();
             verticesId.pop();
         }
         mesh.verticesPolygons.push_back(v1);
+        //aggiungo anche l'ultimo lato
+        array<unsigned int,2> currentEdge ={previousVId,firstVId};
+        unsigned int end =mesh.extremitiesEdges.size();
+        for(unsigned int j=0; j<end; j++){
+            array<unsigned int,2>& alreadyEdge= mesh.extremitiesEdges[j];
+            if (currentEdge[0]==alreadyEdge[0] && currentEdge[1]==alreadyEdge[1]){//se il lato esiste già aggiungo quello
+                edgesIdTemp.push(j);
+            }
+            else{ //altrimenti lo creo
+                idEdgesMesh.push_back(countIdE);
+                edgesMesh.push_back(currentEdge);
+                edgesIdTemp.push(countIdE);
+                countIdE++;
+            }
 
+        }
+        vector<unsigned int> v2; //vettore degli id dei lati del sottopoligono
+        end=edgesIdTemp.size();
+        v2.reserve(end);
+        for(unsigned int i=0;i<end;i++){
+            v2.push_back(edgesIdTemp.front());
+            edgesIdTemp.pop();
+        }
+        mesh.edgesPolygons.push_back(v2);
     }
-    }
+}
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
                            Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol){
