@@ -766,7 +766,12 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
     cout << "makeCuts called: " <<traces.size()<< endl; //TOGLI
     cout<<"CountIdV appena c nameCuts: "<<countIdV<<endl;
 
-    if(traces.size()!=0){
+    unsigned int sizeT=traces.size();
+    unsigned int sizeV=vertices.size();
+    unsigned int sizeE=edges.size();
+    cout<<"sizeE: "<<sizeE<<endl;
+
+    if(sizeT!=0){
         //Vediamo da che parte della retta passante per la traccia sta il primo vertice (1 se sta da una parte, 0 dall'altra e -1 se è sulla retta)
         int first;
         int previous;
@@ -806,7 +811,9 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
         previous=first;
         Vector3d previousVertex=firstVertex;
         if(!onThePlaneCase){//caso normale
-            for (unsigned int i=0;i<vertices.size();i++){
+            cout<<"Vertices.size: "<<vertices.size()<<endl;
+            for (unsigned int i=0;i<sizeV-1;i++){
+                cout<<i<<endl;
                 Vector3d v=vertices.front();
                 current = findSideOfTheLine(vecOnTheTrace,v-traces.front().extremitiesCoord[0],n,tol);
                 cout<<"Current: "<<current<<endl;
@@ -829,14 +836,14 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     if(previous==first){ //vedo dove mettere i nuovi lati
                         //qua ho solo caso 0 o 1
                         //aggiungo ogni volta i nuovi lati quindi conta come lato uno intero e poi anche le sue suddivisioni //L
-                        edgesMesh.push_back(newEdge1); //L
-                        idEdgesMesh.push_back(countIdE);//L
+                        //edgesMesh.push_back(newEdge1); //L
+                        //idEdgesMesh.push_back(countIdE);//L
                         subedges1.push(newEdge1);
                         subedgesId1.push(countIdE);
                         countIdE++;
                         edgesMesh.push_back(newEdge2);//L
-                        idEdgesMesh.push_back(countIdE);//L
-                        subedges2.push(newEdge2);
+                        //idEdgesMesh.push_back(countIdE);//L
+                        //subedges2.push(newEdge2);
                         subedgesId2.push(countIdE);
                     }
                     else{
@@ -972,13 +979,15 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                 edgesId.pop();
             }
             //ora controllo da che parte stanno le tracce rimanenti
+            Trace tOld = traces.front();
             traces.pop(); //tolgo la prima traccia: ho già tagliato
-            for(unsigned int i=0;i<traces.size();i++){
+            for(unsigned int i=0;i<sizeT-1;i++){
                 Trace t=traces.front();
-                if((findSideOfTheLine(vecOnTheTrace,traces.front().extremitiesCoord[0],n,tol)==first)&&(findSideOfTheLine(vecOnTheTrace,traces.front().extremitiesCoord[1],n,tol)==first)){
+                //VEDI FIRST SE -1 NON VA BENE
+                if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==first)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==first)){
                     subtraces1.push(t);
                 }
-                else if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0],n,tol)!=first)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1],n,tol)!=first)){
+                else if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)!=first)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)!=first)){
                     subtraces2.push(t);
                 }
                 else{//la traccia ha tagliato quest'altra traccia
@@ -996,7 +1005,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
 
     }
         else{//caso onThePlane
-            for (unsigned int i=0;i<vertices.size();i++){
+            for (unsigned int i=0;i<sizeV-1;i++){
                 Vector3d v=vertices.front();
                 current = findSideOfTheLine(vecOnTheTrace,v-traces.front().extremitiesCoord[0],n,tol);
                 if(current==-1 && previous==-1){//sono sul lato interessato dalla traccia
@@ -1049,22 +1058,25 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
     }
     else{//vuol dire che per questo sottopoligono ho finito di tagliare
         //trasformo la coda in vettore e la aggiungo alla mesh
+
         vector<unsigned int> v1;
-        v1.reserve(verticesId.size());
-        for(unsigned int i=0;i<verticesId.size();i++){
+        v1.reserve(sizeV);
+        for(unsigned int i=0;i<sizeV;i++){
             v1.push_back(verticesId.front());
             verticesId.pop();
         }
         mesh.verticesPolygons.push_back(v1);
         //stessa cosa per i lati
         vector<unsigned int> v2;
-        v2.reserve(edgesId.size());
-        for(unsigned int i=0;i<edgesId.size();i++){
+        v2.reserve(sizeE);
+        cout<<"sizeE: "<<sizeE<<endl;
+        for(unsigned int i=0;i<sizeE;i++){
+            cout<<"lol";
             v2.push_back(edgesId.front());
             edgesId.pop();
         }
+        cout<<"FIN QUA OK"<<endl;
         mesh.edgesPolygons.push_back(v2);
-
     }
     }
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
