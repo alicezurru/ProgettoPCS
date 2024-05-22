@@ -30,21 +30,7 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
         return true;
     return false;
 }
-inline int findSideOfTheLine (const Vector3d& vecLine, const Vector3d& vecToTest, double tol){ //HA SENSO LASCIARLA INLINE O è TROPPO LUNGA?
-    int flag=-1;
-    Vector3d v=Vector3d(1,0,0); //prendo un vettore ausiliario non parallelo a quello sulla traccia
-    if (abs(v.dot(vecLine))<tol){
-        v=Vector3d(0,1,0);
-    }
-    Vector3d n = vecLine.cross(v);
-    if (vecToTest.dot(n)>tol){
-        flag=1;
-    }
-    else if (vecToTest.dot(n)<-tol){
-        flag=1;
-    }
-    return flag; //restituisce -1 se vecToTest sta sulla retta
-}
+int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);
 Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);
 }
 
@@ -58,7 +44,7 @@ namespace PolygonalMeshLibrary{
 vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
 void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
               queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
-              list<array<unsigned int,2>> edgesMesh,list<unsigned int> idEdgesMesh, int idFrac);
+              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n);
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
                            queue<array<unsigned int,2>>& subedges1, queue<unsigned int>& subedgesId1,list<array<unsigned int,2>>& edgesMesh,
