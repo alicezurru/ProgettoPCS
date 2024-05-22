@@ -43,12 +43,10 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 namespace PolygonalMeshLibrary{
 vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
 void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
-              queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
               list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n);
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
-                           queue<array<unsigned int,2>>& subedges1, queue<unsigned int>& subedgesId1,list<array<unsigned int,2>>& edgesMesh,
-                           list<unsigned int>& idEdgesMesh, unsigned int& countIdE, queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId,
                            Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol);
 void printPolygonalMesh(const PolygonalMesh& mesh, const string& fileName);
 }

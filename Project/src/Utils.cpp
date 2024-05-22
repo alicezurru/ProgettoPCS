@@ -687,8 +687,6 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
 
         queue<Vector3d> vertices;//coda perchè mi serve solo inserire e riprendere nello stesso ordine (senso antiorario)
         queue<unsigned int> verticesId;
-        queue<array<unsigned int,2>> edges;
-        queue<unsigned int> edgesId;
         if (fr.idFrac!=-1){//escludo quelle problematiche
             queue<Trace> allTraces;
             for (unsigned int i=0; i<fr.passingTraces.size(); i++){
@@ -704,19 +702,12 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
                 verticesId.push(countIdV);
                 verticesMesh.push_back(fr.vertices[i]);
                 idVerticesMesh.push_back(countIdV);
-                //lati
-                array<unsigned int,2> edge={countIdV,(countIdV+1)%fr.numVertices};
-                edges.push(edge);
-                edgesMesh.push_back(edge);//li aggiungo già da qua anche se poi magari li taglio? SECONDO ME NO -> RISOLVERE
-                edgesId.push(countIdE);
-                idEdgesMesh.push_back(countIdE);
                 countIdV++;
-                countIdE++;
             }
 
             //do il via ai tagli ricorsivi
             cout<<"Primo make: ";
-            makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,edges,edgesId,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,fr.idFrac,n);
+            makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,fr.idFrac,n);
 
 
             //trasformo le liste di verticesMesh e idVerticesMesh in vettori e le aggiungo alla mesh
@@ -756,8 +747,8 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
     }
     return vec;
 }
-void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
-              queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
+              unsigned int& countIdE, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
               list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n){
     //prende in input la coda con i vertici correnti del sottopoligono che deve ancora essere tagliato dalle tracce memorizzate in traces
     //scelgo di usare una coda perché, man mano che taglio il sottopoligono, si creano altri vertici che andranno sempre aggiunti in coda a quelli
@@ -768,9 +759,6 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
 
     unsigned int sizeT=traces.size();
     unsigned int sizeV=vertices.size();
-    unsigned int sizeE=edges.size();
-    cout<<"sizeE: "<<sizeE<<endl;
-
     if(sizeT!=0){
         //Vediamo da che parte della retta passante per la traccia sta il primo vertice (1 se sta da una parte, 0 dall'altra e -1 se è sulla retta)
         int first;
@@ -781,10 +769,6 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
         queue<Vector3d> subvertices2; //poi per metterle nella mesh
         queue<unsigned int> subverticesId1;//poi nella mesh memorizzo gli id per ogni poligono
         queue<unsigned int> subverticesId2;
-        queue<array<unsigned int,2>> subedges1;
-        queue<array<unsigned int,2>> subedges2;
-        queue<unsigned int> subedgesId1;
-        queue<unsigned int> subedgesId2;
         queue<Trace> subtraces1;
         queue<Trace> subtraces2;
 
@@ -829,37 +813,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     subverticesId2.push(countIdV);
                     subvertices1.push(intersection);
                     subvertices2.push(intersection);
-                    //creo due nuovi lati a partire dal precedente
-                    array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                    array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
                     countIdV++;
-                    if(previous==first){ //vedo dove mettere i nuovi lati
-                        //qua ho solo caso 0 o 1
-                        //aggiungo ogni volta i nuovi lati quindi conta come lato uno intero e poi anche le sue suddivisioni //L
-                        //edgesMesh.push_back(newEdge1); //L
-                        //idEdgesMesh.push_back(countIdE);//L
-                        subedges1.push(newEdge1);
-                        subedgesId1.push(countIdE);
-                        countIdE++;
-                        edgesMesh.push_back(newEdge2);//L
-                        //idEdgesMesh.push_back(countIdE);//L
-                        //subedges2.push(newEdge2);
-                        subedgesId2.push(countIdE);
-                    }
-                    else{
-                        edgesMesh.push_back(newEdge2);//L
-                        idEdgesMesh.push_back(countIdE);//L
-                        subedges1.push(newEdge2);
-                        subedgesId2.push(countIdE);
-                        countIdE++;
-                        edgesMesh.push_back(newEdge1);//L
-                        idEdgesMesh.push_back(countIdE);//L
-                        subedges2.push(newEdge1);
-                        subedgesId1.push(countIdE);
-                    }
-                    edgesId.pop();
-                    edges.pop();
-                    countIdE++;
                     if(first==-1){//aggiungo qui i nuovi vertici nel caso in cui first==-1 perché mi serve sapere se ho "cambiato
                         //lato della traccia" o no (gli altri casi li tratto dopo)
                         //sono nel caso in cui ho cambiato lato
@@ -878,19 +832,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
 
                 else if ((current==0 && previous ==0) || (current==1 && previous ==1) || (current!=-1 && previous==-1)){
                     cout<<"non intersecato"<<endl;
-                    //se il lato non è tagliato dalla traccia (o se la traccia lo taglia solo su un estremo) devo aggiungerlo
-                    if(current==first || previousSide1){ //vedo dove mettere il lato
-                        //va nell'1 se il vertice corrente è dalla stessa parte del primo. Nel caso in cui first==-1 non tratto qui il caso current==first
-                        //ma guardo da che parte avevo salvato il vertice precedente e lo metto lì
-                        subedges1.push(edges.front());
-                        subedgesId1.push(edgesId.front());
-                    }
-                    else{
-                        subedges2.push(edges.front());
-                        subedgesId2.push(edgesId.front());
-                    }
-                    edges.pop();
-                    edgesId.pop();
+
                     //vertici nel caso first==-1
                     if(first==-1){//aggiungo qui i nuovi vertici nel caso in cui first==-1 perché mi serve sapere se ho "cambiato
                         //lato della traccia" o no (gli altri casi li tratto dopo)
@@ -911,16 +853,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     subverticesId1.push(verticesId.front());
                     subvertices2.push(v);
                     subverticesId2.push(verticesId.front());
-                    //lato dalla parte di quello precedente e non è tagliato
-                    if (previousSide1){
-                        subedges1.push(edges.front());
-                        subedgesId1.push(edgesId.front());
-                    }
-                    else{
-                        subedges2.push(edges.front());
-                        subedgesId2.push(edgesId.front());
-                    }
-                        previousSide1= !previousSide1; //lo inverto perché moralmente sto "passando dall'altra parte" della traccia
+                    previousSide1= !previousSide1; //lo inverto perché moralmente sto "passando dall'altra parte" della traccia
                 }
                 //controllo da che parte sta il vertice corrente (se dalla stessa del primo o dall'altra) e lo salvo nella lista di subvertices corrispondente
                 //questo va fatto in entrambi i casi (sia current == previous sia !=)
@@ -954,30 +887,9 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                 subverticesId2.push(countIdV);
                 subvertices1.push(intersection);
                 subvertices2.push(intersection);
-                //creo due nuovi lati a partire dal precedente
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
                 countIdV++;
-                subedges1.push(newEdge2);
-                subedgesId2.push(countIdE);
-                idEdgesMesh.push_back(countIdE);//L
-                edgesMesh.push_back(newEdge2);//L
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);//L
-                edgesMesh.push_back(newEdge1);//L
-                subedges2.push(newEdge1);
-                subedgesId1.push(countIdE);
+            }
 
-                edgesId.pop();
-                edges.pop();
-                countIdE++;
-            }
-            else{//se l'ultimo lato non è tagliato dalla traccia devo aggiungerlo
-                subedges1.push(edges.front());
-                subedgesId1.push(edgesId.front());
-                edges.pop();
-                edgesId.pop();
-            }
             //ora controllo da che parte stanno le tracce rimanenti
             Trace tOld = traces.front();
             traces.pop(); //tolgo la prima traccia: ho già tagliato
@@ -999,9 +911,9 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             cout<<"CountIdV: "<<countIdV<<endl;
             //ricorsione:
             cout<<"ric 1"<<endl;
-            makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,subedges1,subedgesId1,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
             cout<<"ric 2"<<endl;
-            makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,subedges1,subedgesId1,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
 
     }
         else{//caso onThePlane
@@ -1012,19 +924,14 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     //non va bene fare come i casi precedenti perché non posso fare l'intersezione tra rette (sono parallele)
                     //devo vedere se uno o entrambi gli estremi della traccia cadono dentro al lato
                     //il primo vertice (previous) è già stato messo
-                    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,subedges1,subedgesId1,edgesMesh,idEdgesMesh,countIdE, edges, edgesId,
+                    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,
                                           v, previousVertex, traces.front().extremitiesCoord[0], traces.front().extremitiesCoord[1], tol);
                     //aggiungo il vertice corrente (la fine)
                     subvertices1.push(v);
                     subverticesId1.push(verticesId.front());
                 }
                 else{
-                    //lato
-                    subedges1.push(edges.front());
-                    subedgesId1.push(edgesId.front());
-                    edges.pop();
-                    edgesId.pop();
-                    //vertice
+
                     subvertices1.push(v);
                     subverticesId1.push(verticesId.front());
                 }
@@ -1035,23 +942,16 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             }
             //ultimo lato
             if(first==-1 && previous==-1){//sono sul lato interessato dalla traccia
-                addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,subedges1,subedgesId1,edgesMesh,idEdgesMesh,countIdE, edges, edgesId,
+                addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,
                                       firstVertex, previousVertex, traces.front().extremitiesCoord[0], traces.front().extremitiesCoord[1], tol);
 
-            }
-            else{
-                //lato
-                subedges1.push(edges.front());
-                subedgesId1.push(edgesId.front());
-                edges.pop();
-                edgesId.pop();
             }
 
             //le tracce sono le stesse di prima esclusa la prima
             traces.pop();
 
             //ricorsione
-            makeCuts(subvertices1,subverticesId1,traces,tol,mesh,countIdV,countIdE,subedges1,subedgesId1,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices1,subverticesId1,traces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
 
         }
 
@@ -1066,23 +966,11 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             verticesId.pop();
         }
         mesh.verticesPolygons.push_back(v1);
-        //stessa cosa per i lati
-        vector<unsigned int> v2;
-        v2.reserve(sizeE);
-        cout<<"sizeE: "<<sizeE<<endl;
-        for(unsigned int i=0;i<sizeE;i++){
-            cout<<"lol";
-            v2.push_back(edgesId.front());
-            edgesId.pop();
-        }
-        cout<<"FIN QUA OK"<<endl;
-        mesh.edgesPolygons.push_back(v2);
+
     }
     }
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
-                           queue<array<unsigned int,2>>& subedges1, queue<unsigned int>& subedgesId1,list<array<unsigned int,2>>& edgesMesh,
-                           list<unsigned int>& idEdgesMesh, unsigned int& countIdE, queue<array<unsigned int,2>>& edges, queue<unsigned int>& edgesId,
                            Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol){
     double tol2d=max(tol, 10*numeric_limits<double>::epsilon());
     //distinguo le posizioni reciproche di p(previous), c(current), e0(estremità 0 traccia), e1(estremità 1)
@@ -1095,28 +983,8 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
             idVerticesMesh.push_back(countIdV);
             subvertices1.push(e1);
             subverticesId1.push(countIdV);
-            //e i due lati (pe1) e (e1c)
-            array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-            array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-            edgesMesh.push_back(newEdge1);
-            edgesMesh.push_back(newEdge2);
-            subedges1.push(newEdge1);
-            subedges1.push(newEdge2);
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-            countIdE++;
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-
             countIdV++;
-            countIdE++;
         }
-        else{//e1 coincide con c oppure cade al di fuori del lato
-            subedges1.push(edges.front());
-            subedgesId1.push(edgesId.front());
-        }
-        edges.pop();
-        edgesId.pop();
         return;
     }
     if((e0-c).squaredNorm()<tol2d){//e0 coincide con c
@@ -1126,28 +994,8 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
             idVerticesMesh.push_back(countIdV);
             subvertices1.push(e1);
             subverticesId1.push(countIdV);
-            //e i due lati (pe1) e (e1c)
-            array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-            array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-            edgesMesh.push_back(newEdge1);
-            edgesMesh.push_back(newEdge2);
-            subedges1.push(newEdge1);
-            subedges1.push(newEdge2);
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-            countIdE++;
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-
             countIdV++;
-            countIdE++;
         }
-        else{//e1 coincide con p oppure cade al di fuori del lato
-            subedges1.push(edges.front());
-            subedgesId1.push(edgesId.front());
-        }
-        edges.pop();
-        edgesId.pop();
         return;
     }
     if((e1-p).squaredNorm()<tol2d){//e1 coincide con p
@@ -1157,28 +1005,8 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
             idVerticesMesh.push_back(countIdV);
             subvertices1.push(e0);
             subverticesId1.push(countIdV);
-            //e i due lati (pe0) e (e0c)
-            array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-            array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-            edgesMesh.push_back(newEdge1);
-            edgesMesh.push_back(newEdge2);
-            subedges1.push(newEdge1);
-            subedges1.push(newEdge2);
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-            countIdE++;
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-
             countIdV++;
-            countIdE++;
         }
-        else{//e0 coincide con c oppure cade al di fuori del lato
-            subedges1.push(edges.front());
-            subedgesId1.push(edgesId.front());
-        }
-        edges.pop();
-        edgesId.pop();
         return;
     }
     if((e1-c).squaredNorm()<tol2d){//e1 coincide con c
@@ -1188,103 +1016,39 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
             idVerticesMesh.push_back(countIdV);
             subvertices1.push(e0);
             subverticesId1.push(countIdV);
-            //e i due lati (pe0) e (e0c)
-            array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-            array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-            edgesMesh.push_back(newEdge1);
-            edgesMesh.push_back(newEdge2);
-            subedges1.push(newEdge1);
-            subedges1.push(newEdge2);
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-            countIdE++;
-            idEdgesMesh.push_back(countIdE);
-            subedgesId1.push(countIdE);
-
             countIdV++;
-            countIdE++;
         }
-        else{//e0 coincide con p oppure cade al di fuori del lato
-            subedges1.push(edges.front());
-            subedgesId1.push(edgesId.front());
-        }
-        edges.pop();
-        edgesId.pop();
         return;
     }
     //fine casi particolari
 
     if((e0-p).dot(e1-p)>tol){
         if((e0-c).dot(e1-c)>tol){
-            if((e1-e0).dot(p-e0)>tol){//aggiungo prima e1 e poi e0 e i corridpondenti lati
+            if((e1-e0).dot(p-e0)>tol){//aggiungo prima e1 e poi e0
                 verticesMesh.push_back(e1);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e1);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,countIdV+1};
                 countIdV++;
 
                 verticesMesh.push_back(e0);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e0);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge3={countIdV,edges.front()[1]};
-
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                edgesMesh.push_back(newEdge3);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                subedges1.push(newEdge3);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
             else{//aggiungo prima e0 e poi e1 e i corridpondenti lati
                 verticesMesh.push_back(e0);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e0);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,countIdV+1};
                 countIdV++;
 
                 verticesMesh.push_back(e1);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e1);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge3={countIdV,edges.front()[1]};
-
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                edgesMesh.push_back(newEdge3);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                subedges1.push(newEdge3);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
         }
         else{
@@ -1293,44 +1057,14 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e1);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
             else{//aggiungo e0
                 verticesMesh.push_back(e0);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e0);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
         }
     }
@@ -1341,51 +1075,15 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e1);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
             else{//aggiungo e0
                 verticesMesh.push_back(e0);
                 idVerticesMesh.push_back(countIdV);
                 subvertices1.push(e0);
                 subverticesId1.push(countIdV);
-                array<unsigned int,2> newEdge1={edges.front()[0],countIdV};
-                array<unsigned int,2> newEdge2={countIdV,edges.front()[1]};
-                edgesMesh.push_back(newEdge1);
-                edgesMesh.push_back(newEdge2);
-                subedges1.push(newEdge1);
-                subedges1.push(newEdge2);
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-                countIdE++;
-                idEdgesMesh.push_back(countIdE);
-                subedgesId1.push(countIdE);
-
                 countIdV++;
-                countIdE++;
-                edges.pop();
-                edgesId.pop();
             }
-        }
-        else{//non devo aggiungere nessun nuovo vertice, ma solo il lato non modificato
-            subedges1.push(edges.front());
-            subedgesId1.push(edgesId.front());
-            edges.pop();
-            edgesId.pop();
         }
     }
 }
