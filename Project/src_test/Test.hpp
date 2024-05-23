@@ -232,6 +232,49 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     EXPECT_FALSE(intersection);
 }
 
+//int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);
+TEST(ALGEBRATEST, TestFindSideOfTheLine){
+    //caso base
+    double tol=10*numeric_limits<double>::epsilon();
+    Vector3d n = Vector3d(0,1,0);
+    Vector3d vecLine= Vector3d(-4,0,0);
+    Vector3d vecToTest= Vector3d(0,0,2);
+    int i =findSideOfTheLine(vecLine,vecToTest,n,tol);
+    EXPECT_EQ(i,0);
+
+    vecToTest= Vector3d(0,0,-2);
+    i =findSideOfTheLine(vecLine,vecToTest,n,tol);
+    EXPECT_EQ(i,1);
+
+    //considero un punto molto vicino alla retta
+    vecToTest= Vector3d(0,0,2*0.00000000000001);
+    i =findSideOfTheLine(vecLine,vecToTest,n,tol);
+    EXPECT_EQ(i,0);
+
+    //considero un punto molto vicino alla retta: così vicino che è sul piano
+    vecToTest= Vector3d(0,0,2*0.0000000000000000001);
+    i =findSideOfTheLine(vecLine,vecToTest,n,tol);
+    EXPECT_EQ(i,-1);
+
+    //
+    vecToTest= Vector3d(100000000,0,0.0000000001);
+    i =findSideOfTheLine(vecLine,vecToTest,n,tol);
+    EXPECT_EQ(i,-1);
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
 
 
 }
