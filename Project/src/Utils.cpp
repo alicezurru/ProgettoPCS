@@ -11,6 +11,7 @@
 #include <list>
 #include <cassert> //per mergesort
 #include <queue>
+#include <map>
 
 using namespace std;
 using namespace Eigen;
@@ -684,7 +685,7 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
         list<unsigned int> idVerticesMesh;
         list<array<unsigned int,2>> edgesMesh;
         list<unsigned int> idEdgesMesh;
-
+        map<array<unsigned int,2>,unsigned int> mapEdges;
         queue<Vector3d> vertices;//coda perchè mi serve solo inserire e riprendere nello stesso ordine (senso antiorario)
         queue<unsigned int> verticesId;
         if (fr.idFrac!=-1){//escludo quelle problematiche
@@ -707,8 +708,7 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
 
             //do il via ai tagli ricorsivi
             cout<<"Primo make: ";
-            makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,fr.idFrac,n);
-            cout << "FIN QUI OK" << endl;
+            makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,fr.idFrac,n,mapEdges);
 
             //trasformo le liste di verticesMesh e idVerticesMesh in vettori e le aggiungo alla mesh
             vector<Vector3d> verticesMeshV;
@@ -749,7 +749,7 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
 }
 void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
               unsigned int& countIdE, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
-              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n){
+              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int> mapEdges){
     //prende in input la coda con i vertici correnti del sottopoligono che deve ancora essere tagliato dalle tracce memorizzate in traces
     //scelgo di usare una coda perché, man mano che taglio il sottopoligono, si creano altri vertici che andranno sempre aggiunti in coda a quelli
     //del nuovo sottopoligono; inoltre non so a priori quanti saranno. Anche per le tracce uso una coda perché dovrò poi toglierle dalla testa man mano
@@ -911,9 +911,9 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             cout<<"CountIdV: "<<countIdV<<endl;
             //ricorsione:
             cout<<"ric 1"<<endl;
-            makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
             cout<<"ric 2"<<endl;
-            makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
 
     }
         else{//caso onThePlane
@@ -951,63 +951,60 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             traces.pop();
 
             //ricorsione
-            makeCuts(subvertices1,subverticesId1,traces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n);
+            makeCuts(subvertices1,subverticesId1,traces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
 
         }
 
     }
     else{//vuol dire che per questo sottopoligono ho finito di tagliare
-        //trasformo la coda in vettore e la aggiungo alla mesh
+        //per i vertici trasformo la coda in vettore e la aggiungo alla mesh
         //poi, se non esistono già, creo i lati e li aggiungo alla mesh
         vector<unsigned int> v1;
-        queue<unsigned int> edgesIdTemp; //li salvo prima tutti in una coda, controllando se non ci sono già e poi li metto nel vettore
+        vector<unsigned int> e1;
+        //scelgo di fare una mappa perchè ha costo di inserimento O(logn), di controllo se presente O(logn), (VERIFICA SE VERO, l'ha detto chatty)
+        //mentre inserire in un vettore sarebbe O(1) e poi scorrerlo O(n) alla peggio
+
         v1.reserve(sizeV);
+        e1.reserve(sizeV); //tanti lati quanti vertici
         unsigned int firstVId=verticesId.front(); //lo salvo per controllare anche l'ultimo lato
         unsigned int previousVId=firstVId;
-        for(unsigned int i=0;i<sizeV;i++){
-            v1.push_back(verticesId.front());
+        v1.push_back(verticesId.front());
+        verticesId.pop();
+        for(unsigned int i=0;i<sizeV-1;i++){
+            v1.push_back(verticesId.front()); //aggiungo il vertice
             array<unsigned int,2> currentEdge ={previousVId,verticesId.front()};
-            unsigned int end =mesh.extremitiesEdges.size();
-            for(unsigned int j=0; j<end; j++){
-                array<unsigned int,2>& alreadyEdge= mesh.extremitiesEdges[j];
-                if (currentEdge[0]==alreadyEdge[0] && currentEdge[1]==alreadyEdge[1]){//se il lato esiste già aggiungo quello
-                    edgesIdTemp.push(j);
-                }
-                else{ //altrimenti lo creo
-                    idEdgesMesh.push_back(countIdE);
-                    edgesMesh.push_back(currentEdge);
-                    edgesIdTemp.push(countIdE);
-                    countIdE++;
-                }
+            array<unsigned int,2> currentEdgeContr ={verticesId.front(),previousVId};//se non è stato salvato al contrario nella mappa
+            if (mapEdges.count(currentEdge)>0||mapEdges.count(currentEdgeContr)>0){//se il lato esiste già aggiungo quello
+                e1.push_back(mapEdges[currentEdge]);
+
             }
+            else{
+                mapEdges[currentEdge]=countIdE; //altrimenti lo creo
+                idEdgesMesh.push_back(countIdE);
+                edgesMesh.push_back(currentEdge);
+                e1.push_back(countIdE);
+                countIdE++;
+            }
+
             previousVId=verticesId.front();
             verticesId.pop();
         }
         mesh.verticesPolygons.push_back(v1);
         //aggiungo anche l'ultimo lato
         array<unsigned int,2> currentEdge ={previousVId,firstVId};
-        unsigned int end =mesh.extremitiesEdges.size();
-        for(unsigned int j=0; j<end; j++){
-            array<unsigned int,2>& alreadyEdge= mesh.extremitiesEdges[j];
-            if (currentEdge[0]==alreadyEdge[0] && currentEdge[1]==alreadyEdge[1]){//se il lato esiste già aggiungo quello
-                edgesIdTemp.push(j);
-            }
-            else{ //altrimenti lo creo
-                idEdgesMesh.push_back(countIdE);
-                edgesMesh.push_back(currentEdge);
-                edgesIdTemp.push(countIdE);
-                countIdE++;
-            }
+        array<unsigned int,2> currentEdgeContr ={firstVId,previousVId};
+        if (mapEdges.count(currentEdge)>0||mapEdges.count(currentEdgeContr)>0){//se il lato esiste già aggiungo quello
+            e1.push_back(mapEdges[currentEdge]);
 
         }
-        vector<unsigned int> v2; //vettore degli id dei lati del sottopoligono
-        end=edgesIdTemp.size();
-        v2.reserve(end);
-        for(unsigned int i=0;i<end;i++){
-            v2.push_back(edgesIdTemp.front());
-            edgesIdTemp.pop();
+        else{
+            mapEdges[currentEdge]=countIdE; //altrimenti lo creo
+            idEdgesMesh.push_back(countIdE);
+            edgesMesh.push_back(currentEdge);
+            e1.push_back(countIdE);
+            countIdE++;
         }
-        mesh.edgesPolygons.push_back(v2);
+        mesh.edgesPolygons.push_back(e1);
     }
 }
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
@@ -1150,6 +1147,9 @@ void printPolygonalMesh(const PolygonalMesh& mesh, const string& fileName){
         }
         ofstr << ";" << mesh.edgesPolygons[i].size();
         for (unsigned int j=0; j<mesh.verticesPolygons[i].size(); j++){
+            cout<<"NV: "<<mesh.verticesPolygons[i].size()<<endl;
+            cout<<"NE: "<<mesh.edgesPolygons[i].size()<<endl;
+            cout << "FIN QUI OK" << endl;
             ofstr <<";" << mesh.edgesPolygons[i][j];
         }
         ofstr << endl;
