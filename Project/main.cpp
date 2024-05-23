@@ -27,9 +27,8 @@ int main(int argc, char **argv) //passo la tolleranza
 
     //parte 2
     vector<PolygonalMesh> vecMesh = cutFractures(vec, vecTraces,tol);
-    for (unsigned int i=0; i<vecMesh.size(); i++){
-        printPolygonalMesh(vecMesh[i], "printMesh"+to_string(i));
-    }
+    printPolygonalMesh(vecMesh, "printMesh");
+
 
     chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     double duration=std::chrono::duration_cast<std::chrono::milliseconds>(t_end-t_begin).count();
