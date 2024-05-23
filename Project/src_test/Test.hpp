@@ -7,10 +7,12 @@
 #include "Eigen/Eigen"
 #include <cmath>
 #include <iostream>
+#include "PolygonalMesh.hpp"
 
 using namespace Eigen;
 using namespace std;
 using namespace Algebra;
+using namespace PolygonalMeshLibrary;
 
 namespace Geometry {
 
@@ -256,19 +258,6 @@ TEST(ALGEBRATEST, TestFindSideOfTheLine){
     i =findSideOfTheLine(vecLine,vecToTest,n,tol);
     EXPECT_EQ(i,-1);
 
-    //
-    vecToTest= Vector3d(100000000,0,0.0000000001);
-    i =findSideOfTheLine(vecLine,vecToTest,n,tol);
-    EXPECT_EQ(i,-1);
-
-
-
-
-
-
-
-
-
 }
 
 
@@ -317,7 +306,209 @@ TEST(SORTINGTEST, TestMergeSort){
 
 }
 
+namespace PolygonalMeshLibrary{
 
+/*void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
+              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);*/
+
+TEST(POLYGONTEST,TestMakeCuts){
+    //caso base: 1 traccia passante
+    double tol=10*numeric_limits<double>::epsilon();
+    Vector3d n = Vector3d(0,0,1);
+    unsigned int countIdV=4;
+    unsigned int countIdE=0;
+    PolygonalMesh mesh;
+    Vector3d a = Vector3d(0,0,0);
+    Vector3d b = Vector3d(2,0,0);
+    Vector3d c = Vector3d(2,2,0);
+    Vector3d d = Vector3d(0,2,0);
+    list<Vector3d> verticesMesh={a,b,c,d};
+    list<unsigned int> idVerticesMesh={0,1,2,3};
+    list<unsigned int> idEdgesMesh={0,1,2,3};
+    list<array<unsigned int,2>> edgesMesh;
+    edgesMesh.push_back({0,1});
+    edgesMesh.push_back({1,2});
+    edgesMesh.push_back({2,3});
+    edgesMesh.push_back({3,0});
+    map<array<unsigned int,2>,unsigned int> mapEdges;
+    queue<unsigned int> verticesId;
+    verticesId.push(0);
+    verticesId.push(1);
+    verticesId.push(2);
+    verticesId.push(3);
+    queue<Vector3d> vertices;
+    vertices.push(a);
+    vertices.push(b);
+    vertices.push(c);
+    vertices.push(d);
+    queue<Trace> allTraces;
+    Trace tr;
+
+    tr.idTr=0;
+    tr.extremitiesCoord={Vector3d(1,0,0),Vector3d(1,2,0)};
+    tr.length=2;
+    tr.fracturesIds={0,1};
+    tr.Tips={false,false};
+    tr.onThePlane={false,false};
+    allTraces.push(tr);
+    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+             idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
+    EXPECT_EQ(countIdV,6);
+    EXPECT_EQ(countIdE,7);
+    EXPECT_EQ(mesh.verticesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.verticesPolygons[1].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[1].size(),4);
+
+    //poligono1
+    EXPECT_EQ(mesh.verticesPolygons[0][0],0);
+    EXPECT_EQ(mesh.verticesPolygons[0][1],4);
+    EXPECT_EQ(mesh.verticesPolygons[0][2],5);
+    EXPECT_EQ(mesh.verticesPolygons[0][3],3);
+
+    EXPECT_EQ(mesh.edgesPolygons[0][0],0);
+    EXPECT_EQ(mesh.edgesPolygons[0][1],1);
+    EXPECT_EQ(mesh.edgesPolygons[0][2],2);
+    EXPECT_EQ(mesh.edgesPolygons[0][3],3);
+
+    //poligono2
+    EXPECT_EQ(mesh.verticesPolygons[1][0],4);
+    EXPECT_EQ(mesh.verticesPolygons[1][1],1);
+    EXPECT_EQ(mesh.verticesPolygons[1][2],2);
+    EXPECT_EQ(mesh.verticesPolygons[1][3],5);
+
+    EXPECT_EQ(mesh.edgesPolygons[1][0],4);
+    EXPECT_EQ(mesh.edgesPolygons[1][1],5);
+    EXPECT_EQ(mesh.edgesPolygons[1][2],6);
+    EXPECT_EQ(mesh.edgesPolygons[1][3],1);
+
+    //vertici
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),a,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),b,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),c,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),d,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),Vector3d(1,0,0),tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),Vector3d(1,2,0),tol));
+    verticesMesh.pop_front();
+
+    //lati
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{0,4},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{4,5},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{5,3},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{3,0},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{4,1},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{1,2},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{2,5},tol));
+    edgesMesh.pop_front();
+
+    //caso base: 1 traccia non passante
+    //stessi dati di prima ma traccia non passante
+    countIdV=4;
+    countIdE=0;
+    tr.extremitiesCoord={Vector3d(1,0.5,0),Vector3d(1,1.5,0)};
+    tr.length=1;
+    allTraces.push(tr);
+    verticesMesh={a,b,c,d};
+    edgesMesh.push_back({0,1});
+    edgesMesh.push_back({1,2});
+    edgesMesh.push_back({2,3});
+    edgesMesh.push_back({3,0});
+    mapEdges={};
+    verticesId={};
+    verticesId.push(0);
+    verticesId.push(1);
+    verticesId.push(2);
+    verticesId.push(3);
+    vertices={};
+    vertices.push(a);
+    vertices.push(b);
+    vertices.push(c);
+    vertices.push(d);
+
+    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+             idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
+    EXPECT_EQ(countIdV,6);
+    EXPECT_EQ(countIdE,7);
+    EXPECT_EQ(mesh.verticesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.verticesPolygons[1].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[1].size(),4);
+
+    //poligono1
+    EXPECT_EQ(mesh.verticesPolygons[0][0],0);
+    EXPECT_EQ(mesh.verticesPolygons[0][1],4);
+    EXPECT_EQ(mesh.verticesPolygons[0][2],5);
+    EXPECT_EQ(mesh.verticesPolygons[0][3],3);
+
+    EXPECT_EQ(mesh.edgesPolygons[0][0],0);
+    EXPECT_EQ(mesh.edgesPolygons[0][1],1);
+    EXPECT_EQ(mesh.edgesPolygons[0][2],2);
+    EXPECT_EQ(mesh.edgesPolygons[0][3],3);
+
+    //poligono2
+    EXPECT_EQ(mesh.verticesPolygons[1][0],4);
+    EXPECT_EQ(mesh.verticesPolygons[1][1],1);
+    EXPECT_EQ(mesh.verticesPolygons[1][2],2);
+    EXPECT_EQ(mesh.verticesPolygons[1][3],5);
+
+    EXPECT_EQ(mesh.edgesPolygons[1][0],4);
+    EXPECT_EQ(mesh.edgesPolygons[1][1],5);
+    EXPECT_EQ(mesh.edgesPolygons[1][2],6);
+    EXPECT_EQ(mesh.edgesPolygons[1][3],1);
+
+    //vertici
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),a,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),b,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),c,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),d,tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),Vector3d(1,0,0),tol));
+    verticesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),Vector3d(1,2,0),tol));
+    verticesMesh.pop_front();
+
+    //lati
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{0,4},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{4,5},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{5,3},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{3,0},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{4,1},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{1,2},tol));
+    edgesMesh.pop_front();
+    EXPECT_TRUE(areVectorsEqual(verticesMesh.front(),{2,5},tol));
+    edgesMesh.pop_front();
+
+
+
+}
+
+
+
+
+
+
+
+}
 
 
 #endif

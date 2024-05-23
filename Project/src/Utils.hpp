@@ -14,7 +14,7 @@ using namespace Geometry;
 
 namespace Geometry{
 bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);//T
-vector<Trace> findTraces(vector<Fracture>& fractures, double tol);
+vector<Trace> findTraces(vector<Fracture>& fractures, double tol);//T
 void printGlobalResults (const string& fileName, vector<Trace>& traces);
 void printLocalResults (const string& fileName, vector<Fracture>&fractures, const vector<Trace>& traces);
 }
@@ -30,7 +30,7 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
         return true;
     return false;
 }
-int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);
+int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);//T
 Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);
 }
 

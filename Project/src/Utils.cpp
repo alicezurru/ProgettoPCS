@@ -930,10 +930,15 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                         }
 
                     }//suppongo che non possono essere entrambi -1 perché non avrebbe senso avere due tracce "sovrapposte"
-                    else{//la traccia ha tagliato quest'altra traccia
+                    else {
                         subtraces1.push(t);
                         subtraces2.push(t);
                         cout<<"Caso7"<<endl;
+                        cout<<"tracciaNuova 0: "<<t.extremitiesCoord[0][0]<< " "<<t.extremitiesCoord[0][1]<<" "<<t.extremitiesCoord[0][2]<<endl;
+                        cout<<"tracciaNuova 1: "<<t.extremitiesCoord[1][0]<< " "<<t.extremitiesCoord[1][1]<<" "<<t.extremitiesCoord[1][2]<<endl;
+                        cout<<"tracciaVecchia 0: "<<tOld.extremitiesCoord[0][0]<< " "<<tOld.extremitiesCoord[0][1]<<" "<<tOld.extremitiesCoord[0][2]<<endl;
+                        cout<<"tracciaVecchia 1: "<<tOld.extremitiesCoord[1][0]<< " "<<tOld.extremitiesCoord[1][1]<<" "<<tOld.extremitiesCoord[1][2]<<endl;
+
                     }
                 }
                 else{//first=-1--> previous può essere solo 0 o 1 (se no OnthePlane)
@@ -996,10 +1001,18 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             cout<<"CountIdV: "<<countIdV<<endl;
             //ricorsione:
             cout<<"ric 1: "<<subvertices1.size()<<endl;
+            if(subvertices1.size()>0){
             makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
+            }
             cout<<"ric 2: "<<subvertices2.size()<<endl;
+            queue<Vector3d> copia(subvertices2);
+            for (unsigned int i=0;i<subvertices2.size();i++){
+                cout<<"Vertice: "<<copia.front()[0]<<" "<<copia.front()[1]<<" "<<copia.front()[2]<<endl;
+                copia.pop();
+            }
+            if(subvertices2.size()>0){
             makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
-
+            }
     }
         else{//caso onThePlane
             for (unsigned int i=0;i<sizeV-1;i++){
