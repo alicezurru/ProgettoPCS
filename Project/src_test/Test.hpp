@@ -16,7 +16,7 @@ using namespace PolygonalMeshLibrary;
 
 namespace Geometry {
 
-TEST(FRACTURESTEST, TestReadingFractures){
+TEST(FRACTURESTEST, TestReadFractures){
     //test per la lettura da file
     //bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);
     double tol=10*numeric_limits<double>::epsilon();

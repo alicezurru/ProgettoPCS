@@ -53,8 +53,8 @@ Class Algebra_functions {
 + bool findIntersectionPoints(Fracture&,Fracture&,array<Vector3d,4>&,double,array<bool,2>)
 + passBoundingBox(Fracture&,Fracture&)
 + findInternalPoints(array<Vector3d,4>&,double,array<Vector3d,2>&,array<bool,2>&)
-+ bool findSideOfTheLine(Vector3d&,Vector3d&,double)
-+ Vector3d IntersectionLines
++ bool findSideOfTheLine(Vector3d&,Vector3d&,Vector3d&,double)
++ Vector3d IntersectionLines(array<Vector3d,2>&,array<vector3d,2>&)
 
 ..ALGEBRATEST..
 TestFindPlaneEquation
@@ -62,6 +62,8 @@ TestIntersectionPlaneLine
 TestFindIntersectionPoints
 TestPassBoundingBox
 TestFindInternalPoints
+TestFindSideOfTheLine
+TestIntersectionLines
 }
 Algebra_functions ..> Fracture
 Algebra_functions ..> PolygonalMesh
@@ -99,13 +101,14 @@ Class PolygonalMesh{
 ..Non member functions ..
 + vector<PolygonalMesh> cutFractures(vector<Fracture>&,vector<Trace>&,double)
 + void makeCuts(queue<Vector3d>&,queue<unsigned int>&,queue<Trace>&,double,PolygonalMesh&,
-unsigned int&,unsigned int&,queue<array<unsigned int,2>>&,queue<unsigned int>&,
-list<Vector3d>&,list<unsigned int>&,list<array<unsigned int,2>>,list<unsigned int>)
-+ void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,queue<array<unsigned int,2>>&, queue<unsigned int>&,list<array<unsigned int,2>>&,list<unsigned int>&,unsigned int&, queue<array<unsigned int,2>>&, queue<unsigned int>&,Vector3d,Vector3d,Vector3d,Vector3d,double)
+unsigned int&,unsigned int&,list<Vector3d>&,list<unsigned int>&,list<array<unsigned int,2>>&,list<unsigned int>&,int,Vector3d&,map<array<unsigned int,2>,unisgned int>&)
++ void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,Vector3d,Vector3d,Vector3d,Vector3d,double)
++ void printPolygonalMesh(vector<PoygonalMesh>&,string&)
 
-..POLYGONALMESHTEST..
-...
-
+..POLYGONTEST..
+TestMakeCuts
+TestCutFractures
+TestAddVerticesOnThePlane
 }
 }
 
