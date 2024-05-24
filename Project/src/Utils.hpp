@@ -6,6 +6,7 @@
 #include "Fractures.hpp"
 #include "PolygonalMesh.hpp"
 #include <cmath>
+#include <queue>
 
 
 using namespace std;
@@ -13,7 +14,7 @@ using namespace Geometry;
 
 namespace Geometry{
 bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);//T
-vector<Trace> findTraces(vector<Fracture>& fractures, double tol);
+vector<Trace> findTraces(vector<Fracture>& fractures, double tol);//T
 void printGlobalResults (const string& fileName, vector<Trace>& traces);
 void printLocalResults (const string& fileName, vector<Fracture>&fractures, const vector<Trace>& traces);
 }
@@ -29,18 +30,7 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
         return true;
     return false;
 }
-inline bool findSideOfTheLine (const Vector3d& vecLine, const Vector3d& vecToTest, double tol){
-    bool flag=false;
-    Vector3d v=Vector3d(1,0,0); //prendo un vettore ausiliario non parallelo a quello sulla traccia
-    if (abs(v.dot(vecLine))<tol){
-        v=Vector3d(0,1,0);
-    }
-    Vector3d n = vecLine.cross(v);
-    if (vecToTest.dot(n)>tol){
-        flag=true;
-    }
-    return flag;
-}
+int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);//T
 Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);
 }
 
@@ -51,9 +41,14 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 }
 
 namespace PolygonalMeshLibrary{
-vector<PolygonalMesh> cutFractures(const vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
-void makeCuts (list<Vector3d>& vertices,list<vector<unsigned int>> verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
-              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh);
+vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
+              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
+              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);
+void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
+                           list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
+                           Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol);
+void printPolygonalMesh(vector<PolygonalMesh> &vecMesh, const string& fileName);
 }
 
 #endif
