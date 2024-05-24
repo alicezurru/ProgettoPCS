@@ -42,7 +42,7 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 
 namespace PolygonalMeshLibrary{
 vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
-void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
               list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
               list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,

@@ -31,6 +31,12 @@ struct Trace{
     array<bool,2> Tips={}; //memorizza se la traccia è passante (F) o no (V) in ognuna delle due fratture coinvolte
     double length;
     array<bool,2> onThePlane;
+
+    bool pending=false; //servono per la parte 2
+    vector<Vector3d> pendingCoord;
+    vector<unsigned int> pendingId;
+    bool flag=false;
+
 };
 
 }

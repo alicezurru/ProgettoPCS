@@ -689,12 +689,12 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
         queue<Vector3d> vertices;//coda perchè mi serve solo inserire e riprendere nello stesso ordine (senso antiorario)
         queue<unsigned int> verticesId;
         if (fr.idFrac!=-1){//escludo quelle problematiche
-            queue<Trace> allTraces;
+            list<Trace> allTraces;
             for (unsigned int i=0; i<fr.passingTraces.size(); i++){
-                allTraces.push(traces[fr.passingTraces[i]]);
+                allTraces.push_back(traces[fr.passingTraces[i]]);
             }
             for (unsigned int j=0; j<fr.notPassingTraces.size(); j++){
-                allTraces.push(traces[fr.notPassingTraces[j]]);
+                allTraces.push_back(traces[fr.notPassingTraces[j]]);
             }
             //inserisco nella mesh i vertici e i lati della frattura (poi aggiungerò man mano quelli che trovo con i tagli)
             for (unsigned int i=0; i<fr.numVertices; i++){
@@ -747,7 +747,7 @@ vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Tr
     }
     return vec;
 }
-void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
+void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV,
               unsigned int& countIdE, list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
               list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges){
     //prende in input la coda con i vertici correnti del sottopoligono che deve ancora essere tagliato dalle tracce memorizzate in traces
@@ -764,14 +764,15 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
         int first;
         int previous;
         int current;
+        double tol2 = max(10*numeric_limits<double>::epsilon(),tol);
         bool previousSide1=false; //per sapere da che parte ho messo il vertice precedente (serve nel caso current sia -1)
         //true=insieme1, false=insieme2
         queue<Vector3d> subvertices1; //ci memorizzo i vertici del primo sottopoligono dato dal taglio della prima traccia
         queue<Vector3d> subvertices2; //poi per metterle nella mesh
         queue<unsigned int> subverticesId1;//poi nella mesh memorizzo gli id per ogni poligono
         queue<unsigned int> subverticesId2;
-        queue<Trace> subtraces1;
-        queue<Trace> subtraces2;
+        list<Trace> subtraces1;
+        list<Trace> subtraces2;
 
         //caso particolare onThePlane=true: non si generano due nuovi sottopoligoni ma solo uno che ha dei vertici in più sui lati già esistenti
         bool onThePlaneCase=false; //per distinguere il caso particolare in cui la traccia cade su un lato
@@ -809,13 +810,33 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     array<Vector3d,2> lineEdge = {v,previousVertex};
                     Vector3d intersection = intersectionLines(traces.front().extremitiesCoord,lineEdge);
                     cout<<intersection[0]<<intersection[1]<<intersection[2]<<endl;
-                    verticesMesh.push_back(intersection);
-                    idVerticesMesh.push_back(countIdV);
-                    subverticesId1.push(countIdV);
-                    subverticesId2.push(countIdV);
-                    subvertices1.push(intersection);
+                    int alreadyDone=-1; //verifico se i vertici ottenuti dall'intersezione di una traccia pending sono già nel database
+                    if(traces.front().pending){
+                        for(unsigned int i=0;i<traces.front().pendingCoord.size();i++){
+                            if(areVectorsEqual(intersection,traces.front().pendingCoord[i],tol2)){
+                                                        cout<<"mamma"<<endl;
+                                alreadyDone=i;
+
+                            }
+                        }
+                    }
+                    if(alreadyDone!=-1){
+                        subverticesId1.push(traces.front().pendingId[alreadyDone]);
+                        subverticesId2.push(traces.front().pendingId[alreadyDone]);
+                    }
+                    else{
+                        traces.front().flag=true;
+                        verticesMesh.push_back(intersection);
+                        idVerticesMesh.push_back(countIdV);
+                        subverticesId1.push(countIdV);
+                        subverticesId2.push(countIdV);
+                        traces.front().pendingId.push_back(countIdV);//se non c'è lo aggiungo
+                        traces.front().pendingCoord.push_back(intersection);
+                        countIdV++;
+                    }
+
+                    subvertices1.push(intersection);//tanto intersection = traces.front().extremitiesCoord[i]
                     subvertices2.push(intersection);
-                    countIdV++;
                     if(first==-1){//aggiungo qui i nuovi vertici nel caso in cui first==-1 perché mi serve sapere se ho "cambiato
                         //lato della traccia" o no (gli altri casi li tratto dopo)
                         //sono nel caso in cui ho cambiato lato
@@ -883,18 +904,38 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                 //trovo il nuovo vertice: intersezione tra prolungamento della traccia e lato
                 array<Vector3d,2> lineEdge = {firstVertex,previousVertex};
                 Vector3d intersection = intersectionLines(traces.front().extremitiesCoord,lineEdge);
-                verticesMesh.push_back(intersection);
-                idVerticesMesh.push_back(countIdV);
-                subverticesId1.push(countIdV);
-                subverticesId2.push(countIdV);
+                int alreadyDone=-1; //verifico se i vertici ottenuti dall'intersezione di una traccia pending sono già nel database
+                if(traces.front().pending){
+                    cout<<"SIZEP: "<<traces.front().pendingCoord.size()<<endl;
+                    for(unsigned int i=0;i<traces.front().pendingCoord.size();i++){
+                        cout<<"VEDO: "<<intersection[0]<<intersection[1]<<intersection[2]<<endl;
+                        cout<<traces.front().pendingCoord[i][0]<<traces.front().pendingCoord[i][1]<<traces.front().pendingCoord[i][2]<<endl;
+                        if(areVectorsEqual(intersection,traces.front().pendingCoord[i],tol2)){
+                            cout<<"papa"<<endl;
+                            alreadyDone=i;
+                        }
+                    }
+                }
+                if(alreadyDone!=-1){
+                    subverticesId1.push(traces.front().pendingId[alreadyDone]);
+                    subverticesId2.push(traces.front().pendingId[alreadyDone]);
+                }
+                else{
+                    verticesMesh.push_back(intersection);
+                    idVerticesMesh.push_back(countIdV);
+                    subverticesId1.push(countIdV);
+                    subverticesId2.push(countIdV);
+                    traces.front().pendingId.push_back(countIdV);//se non c'è lo aggiungo
+                    traces.front().pendingCoord.push_back(intersection);
+                    countIdV++;
+                }
                 subvertices1.push(intersection);
                 subvertices2.push(intersection);
-                countIdV++;
             }
 
             //ora controllo da che parte stanno le tracce rimanenti
             Trace tOld = traces.front();
-            traces.pop(); //tolgo la prima traccia: ho già tagliato
+            traces.pop_front(); //tolgo la prima traccia: ho già tagliato
             cout<<"sizeT: "<<sizeT<<endl;
             for(unsigned int i=0;i<sizeT-1;i++){
                 cout<<"Entrati nel for"<<endl;
@@ -902,37 +943,38 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                 if(first!=-1){
                     cout<<"First no -1"<<endl;
                     if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==first)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==first)){
-                        subtraces1.push(t);
+                        subtraces1.push_back(t);
                         cout<<"Caso1"<<endl;
                     }
                     else if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)!=first)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)!=first)){
-                        subtraces2.push(t);
+                        subtraces2.push_back(t);
                         cout<<"Caso2"<<endl;
                     }
                     else if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==-1){
                         if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==first){
-                            subtraces1.push(t);
+                            subtraces1.push_back(t);
                             cout<<"Caso3"<<endl;
                         }
                         else{
-                            subtraces2.push(t);
+                            subtraces2.push_back(t);
                             cout<<"Caso4"<<endl;
                         }
                     }
                     else if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==-1){
                         if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==first){
-                            subtraces1.push(t);
+                            subtraces1.push_back(t);
                             cout<<"Caso5"<<endl;
                         }
                         else{
-                            subtraces2.push(t);
+                            subtraces2.push_back(t);
                             cout<<"Caso6"<<endl;
                         }
 
                     }//suppongo che non possono essere entrambi -1 perché non avrebbe senso avere due tracce "sovrapposte"
                     else {
-                        subtraces1.push(t);
-                        subtraces2.push(t);
+                        t.pending=true;
+                        subtraces1.push_back(t);
+                        subtraces2.push_back(t);
                         cout<<"Caso7"<<endl;
                         cout<<"tracciaNuova 0: "<<t.extremitiesCoord[0][0]<< " "<<t.extremitiesCoord[0][1]<<" "<<t.extremitiesCoord[0][2]<<endl;
                         cout<<"tracciaNuova 1: "<<t.extremitiesCoord[1][0]<< " "<<t.extremitiesCoord[1][1]<<" "<<t.extremitiesCoord[1][2]<<endl;
@@ -945,58 +987,63 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
                     cout<<"First -1"<<endl;
                     if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==previous)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==previous)){
                         if(previousSide1){//da che parte sta previous
-                            subtraces1.push(t);
+                            subtraces1.push_back(t);
                         }
                         else{
-                            subtraces2.push(t);
+                            subtraces2.push_back(t);
                         }
                     }
                     else if((findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)!=previous)&&(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)!=previous)){
                         if(previousSide1){//da che parte sta previous
-                            subtraces2.push(t);
+                            subtraces2.push_back(t);
                         }
                         else{
-                            subtraces1.push(t);
+                            subtraces1.push_back(t);
                         }
                     }
                     else if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==-1){
                         if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==previous){
                             if(previousSide1){//da che parte sta previous
-                                subtraces1.push(t);
+                                subtraces1.push_back(t);
                             }
                             else{
-                                subtraces2.push(t);
+                                subtraces2.push_back(t);
                             }
                         }
                         else{
                             if(previousSide1){
-                                subtraces2.push(t);
+                                subtraces2.push_back(t);
                             }
                             else{
-                                subtraces1.push(t);
+                                subtraces1.push_back(t);
                             }
                         }
                     }
                     else if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[1]-tOld.extremitiesCoord[0],n,tol)==-1){
                         if(findSideOfTheLine(vecOnTheTrace,t.extremitiesCoord[0]-tOld.extremitiesCoord[0],n,tol)==previous){
                             if(previousSide1){//da che parte sta previous
-                                subtraces1.push(t);
+                                subtraces1.push_back(t);
                             }
                             else{
-                                subtraces2.push(t);
+                                subtraces2.push_back(t);
                             }
                         }
                         else{
                             if(previousSide1){
-                                subtraces2.push(t);
+                                subtraces2.push_back(t);
                             }
                             else{
-                                subtraces1.push(t);
+                                subtraces1.push_back(t);
                             }
                         }
                 }
+                    else{
+                        subtraces1.push_back(t);
+                        subtraces2.push_back(t);
+                        t.pending=true;
+                    }
                 }
-                traces.pop();
+                traces.pop_front();
             }
             cout<<"CountIdV: "<<countIdV<<endl;
             //ricorsione:
@@ -1047,7 +1094,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue
             }
 
             //le tracce sono le stesse di prima esclusa la prima
-            traces.pop();
+            traces.pop_front();
 
             //ricorsione
             makeCuts(subvertices1,subverticesId1,traces,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
