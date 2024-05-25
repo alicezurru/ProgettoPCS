@@ -35,7 +35,6 @@ struct Trace{
     bool pending=false; //servono per la parte 2
     vector<Vector3d> pendingCoord;
     vector<unsigned int> pendingId;
-    bool flag=false;
 
 };
 

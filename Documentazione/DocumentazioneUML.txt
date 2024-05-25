@@ -100,7 +100,7 @@ Class PolygonalMesh{
 
 ..Non member functions ..
 + vector<PolygonalMesh> cutFractures(vector<Fracture>&,vector<Trace>&,double)
-+ void makeCuts(queue<Vector3d>&,queue<unsigned int>&,queue<Trace>&,double,PolygonalMesh&,
++ void makeCuts(queue<Vector3d>&,queue<unsigned int>&,list<reference_wrapper<Trace>>&,double,PolygonalMesh&,
 unsigned int&,unsigned int&,list<Vector3d>&,list<unsigned int>&,list<array<unsigned int,2>>&,list<unsigned int>&,int,Vector3d&,map<array<unsigned int,2>,unisgned int>&)
 + void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,Vector3d,Vector3d,Vector3d,Vector3d,double)
 + void printPolygonalMesh(vector<PoygonalMesh>&,string&)

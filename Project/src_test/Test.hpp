@@ -348,7 +348,8 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.Tips={false,false};
     tr.onThePlane={false,false};
     allTraces.push_back(tr);
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    list<reference_wrapper<Trace>> traceRefs(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,6);
     EXPECT_EQ(countIdE,7);
@@ -415,13 +416,14 @@ TEST(POLYGONTEST,TestMakeCuts){
     ok={2,5};
     EXPECT_EQ(edgesMesh.front(),ok);
     edgesMesh.pop_front();
-    /*
+
     //caso base: 1 traccia non passante
     //stessi dati di prima ma traccia non passante
     countIdV=4;
     countIdE=0;
     tr.extremitiesCoord={Vector3d(1,0.5,0),Vector3d(1,1.5,0)};
     tr.length=1;
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -438,8 +440,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,6);
     EXPECT_EQ(countIdE,7);
@@ -514,6 +517,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     countIdE=0;
     tr.extremitiesCoord={Vector3d(0.5,0.5,0),Vector3d(1.5,0.5,0)};
     tr.length=1;
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -530,8 +534,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,6);
     EXPECT_EQ(countIdE,7);
@@ -604,6 +609,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     countIdE=0;
     tr.extremitiesCoord={Vector3d(0,0,0),Vector3d(1,2,0)};
     tr.length=sqrt(5);
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -620,8 +626,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,5);
     EXPECT_EQ(countIdE,6);
@@ -690,6 +697,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     countIdE=0;
     tr.extremitiesCoord={Vector3d(0,0,0),Vector3d(2,2,0)};
     tr.length=sqrt(8);
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -706,8 +714,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,5);
@@ -770,6 +779,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     countIdE=0;
     tr.extremitiesCoord={Vector3d(0,2,0),Vector3d(2,1,0)};
     tr.length=sqrt(5);
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -786,8 +796,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,5);
     EXPECT_EQ(countIdE,6);
@@ -857,6 +868,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     countIdE=0;
     tr.extremitiesCoord={Vector3d(0,2,0),Vector3d(2,0,0)};
     tr.length=sqrt(8);
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -873,8 +885,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,5);
@@ -938,6 +951,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(0.5,0,0),Vector3d(1.5,0,0)};
     tr.length=1;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -954,8 +968,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,6);
     EXPECT_EQ(countIdE,6);
@@ -1020,6 +1035,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(1,0,0),Vector3d(2,0,0)};
     tr.length=1;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -1036,8 +1052,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,5);
     EXPECT_EQ(countIdE,5);
@@ -1094,6 +1111,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(0,0,0),Vector3d(2,0,0)};
     tr.length=2;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -1110,8 +1128,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,4);
@@ -1161,6 +1180,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(2,0,0),Vector3d(2,2,0)};
     tr.length=2;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -1177,8 +1197,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,4);
@@ -1229,6 +1250,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(2,-1,0),Vector3d(2,2,0)};
     tr.length=3;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -1245,8 +1267,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,4);
@@ -1296,6 +1319,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(-1,0,0),Vector3d(3,0,0)};
     tr.length=4;
     tr.onThePlane={true,false};
+    allTraces={};
     allTraces.push_back(tr);
     verticesMesh={a,b,c,d};
     edgesMesh={};
@@ -1312,8 +1336,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,4);
     EXPECT_EQ(countIdE,4);
@@ -1366,6 +1391,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(1,0,0),Vector3d(1,2,0)};
     tr.length=2;
     tr.onThePlane={false,false};
+    allTraces={};
     allTraces.push_back(tr);
     Trace tr2;
     tr2.idTr=1;
@@ -1390,8 +1416,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,8);
     EXPECT_EQ(countIdE,9);
@@ -1480,6 +1507,7 @@ TEST(POLYGONTEST,TestMakeCuts){
     tr.extremitiesCoord={Vector3d(0,2,0),Vector3d(2,0,0)};
     tr.length=sqrt(8);
     tr.onThePlane={false,false};
+    allTraces={};
     allTraces.push_back(tr);
     tr2.idTr=1;
     tr2.extremitiesCoord={Vector3d(0,0,0),Vector3d(1,1,0)};
@@ -1503,8 +1531,9 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,5);
     EXPECT_EQ(countIdE,8);
@@ -1581,15 +1610,148 @@ TEST(POLYGONTEST,TestMakeCuts){
     EXPECT_EQ(edgesMesh.front(),ok);
     edgesMesh.pop_front();
 
-    */
-    //caso3
+
+
+    //caso4
     countIdV=4;
     countIdE=0;
     tr.extremitiesCoord={Vector3d(1,0,0),Vector3d(1,2,0)};
     tr.length=2;
     tr.onThePlane={false,false};
+    allTraces={};
     allTraces.push_back(tr);
-    Trace tr2;
+    tr2.idTr=1;
+    tr2.extremitiesCoord={Vector3d(0,1,0),Vector3d(2,1,0)};
+    tr2.length=2;
+    tr2.fracturesIds={0,2};
+    tr2.Tips={false,false};
+    tr2.onThePlane={false,false};
+    allTraces.push_back(tr2);
+    verticesMesh={a,b,c,d};
+    edgesMesh={};
+    mapEdges={};
+    verticesId={};
+    verticesId.push(0);
+    verticesId.push(1);
+    verticesId.push(2);
+    verticesId.push(3);
+    vertices={};
+    vertices.push(a);
+    vertices.push(b);
+    vertices.push(c);
+    vertices.push(d);
+    mesh.verticesPolygons={};
+    mesh.edgesPolygons={};
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
+             idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
+    EXPECT_EQ(countIdV,9);
+    EXPECT_EQ(countIdE,12);
+    EXPECT_EQ(mesh.verticesPolygons.size(),4);
+    EXPECT_EQ(mesh.edgesPolygons.size(),4);
+    EXPECT_EQ(mesh.verticesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[0].size(),4);
+    EXPECT_EQ(mesh.verticesPolygons[1].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[1].size(),4);
+    EXPECT_EQ(mesh.verticesPolygons[2].size(),4);
+    EXPECT_EQ(mesh.edgesPolygons[2].size(),4);
+
+
+
+    //poligono1
+    EXPECT_EQ(mesh.verticesPolygons[0][0],0);
+    EXPECT_EQ(mesh.verticesPolygons[0][1],4);
+    EXPECT_EQ(mesh.verticesPolygons[0][2],6);
+    EXPECT_EQ(mesh.verticesPolygons[0][3],7);
+
+    EXPECT_EQ(mesh.edgesPolygons[0][0],0);
+    EXPECT_EQ(mesh.edgesPolygons[0][1],1);
+    EXPECT_EQ(mesh.edgesPolygons[0][2],2);
+    EXPECT_EQ(mesh.edgesPolygons[0][3],3);
+
+    //poligono2
+    EXPECT_EQ(mesh.verticesPolygons[1][0],6);
+    EXPECT_EQ(mesh.verticesPolygons[1][1],5);
+    EXPECT_EQ(mesh.verticesPolygons[1][2],3);
+    EXPECT_EQ(mesh.verticesPolygons[1][3],7);
+
+    EXPECT_EQ(mesh.edgesPolygons[1][0],4);
+    EXPECT_EQ(mesh.edgesPolygons[1][1],5);
+    EXPECT_EQ(mesh.edgesPolygons[1][2],6);
+    EXPECT_EQ(mesh.edgesPolygons[1][3],2);
+
+    //poligono3
+    EXPECT_EQ(mesh.verticesPolygons[2][0],4);
+    EXPECT_EQ(mesh.verticesPolygons[2][1],1);
+    EXPECT_EQ(mesh.verticesPolygons[2][2],8);
+    EXPECT_EQ(mesh.verticesPolygons[2][3],6);
+
+    EXPECT_EQ(mesh.edgesPolygons[2][0],7);
+    EXPECT_EQ(mesh.edgesPolygons[2][1],8);
+    EXPECT_EQ(mesh.edgesPolygons[2][2],9);
+    EXPECT_EQ(mesh.edgesPolygons[2][3],1);
+
+    //poligono4
+    EXPECT_EQ(mesh.verticesPolygons[3][0],8);
+    EXPECT_EQ(mesh.verticesPolygons[3][1],2);
+    EXPECT_EQ(mesh.verticesPolygons[3][2],5);
+    EXPECT_EQ(mesh.verticesPolygons[3][3],6);
+
+    EXPECT_EQ(mesh.edgesPolygons[3][0],10);
+    EXPECT_EQ(mesh.edgesPolygons[3][1],11);
+    EXPECT_EQ(mesh.edgesPolygons[3][2],4);
+    EXPECT_EQ(mesh.edgesPolygons[3][3],9);
+
+
+
+    //lati
+    ok={0,4};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={4,6};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={6,7};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={7,0};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={6,5};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={5,3};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={3,7};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={4,1};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={1,8};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={8,6};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={8,2};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+    ok={2,5};
+    EXPECT_EQ(edgesMesh.front(),ok);
+    edgesMesh.pop_front();
+
+
+    //caso4
+    countIdV=4;
+    countIdE=0;
+    tr.extremitiesCoord={Vector3d(1,0,0),Vector3d(1,2,0)};
+    tr.length=2;
+    tr.onThePlane={false,false};
+    allTraces={};
+    allTraces.push_back(tr);
     tr2.idTr=1;
     tr2.extremitiesCoord={Vector3d(0,1,0),Vector3d(2,1,0)};
     tr2.length=sqrt(8)/2;
@@ -1620,14 +1782,12 @@ TEST(POLYGONTEST,TestMakeCuts){
     vertices.push(d);
     mesh.verticesPolygons={};
     mesh.edgesPolygons={};
-
-    makeCuts(vertices,verticesId, allTraces,tol,mesh,countIdV,countIdE,verticesMesh,
+    traceRefs={};
+    traceRefs.assign(allTraces.begin(), allTraces.end());
+    makeCuts(vertices,verticesId, traceRefs,tol,mesh,countIdV,countIdE,verticesMesh,
              idVerticesMesh,edgesMesh,idEdgesMesh,0,n,mapEdges);
     EXPECT_EQ(countIdV,12);
     EXPECT_EQ(countIdE,18);
-    EXPECT_TRUE(tr.flag);//togli
-    EXPECT_TRUE(tr2.flag);
-    EXPECT_TRUE(tr3.flag);
     EXPECT_EQ(mesh.verticesPolygons.size(),7);
     EXPECT_EQ(mesh.edgesPolygons.size(),7);
     EXPECT_EQ(mesh.verticesPolygons[0].size(),4);
@@ -1736,9 +1896,6 @@ TEST(POLYGONTEST,TestMakeCuts){
     ok={7,0};
     EXPECT_EQ(edgesMesh.front(),ok);
     edgesMesh.pop_front();
-    ok={3,0};
-    EXPECT_EQ(edgesMesh.front(),ok);
-    edgesMesh.pop_front();
     ok={6,8};
     EXPECT_EQ(edgesMesh.front(),ok);
     edgesMesh.pop_front();
@@ -1781,7 +1938,6 @@ TEST(POLYGONTEST,TestMakeCuts){
     ok={8,11};
     EXPECT_EQ(edgesMesh.front(),ok);
     edgesMesh.pop_front();
-
 
 
 
