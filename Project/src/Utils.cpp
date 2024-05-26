@@ -565,6 +565,7 @@ bool findInternalPoints(array<Vector3d,4>& intPoints, double tol, array<Vector3d
     return intersection;
 
 }
+
 int findSideOfTheLine (const Vector3d& vecLine,const Vector3d& vecToTest,const Vector3d& n,double tol){
     int flag=-1;
     Vector3d v= vecLine.cross(vecToTest);
@@ -1176,6 +1177,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
         }
     }
 }
+
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
                            Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol){

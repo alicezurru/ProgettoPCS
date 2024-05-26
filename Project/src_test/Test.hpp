@@ -260,11 +260,33 @@ TEST(ALGEBRATEST, TestFindSideOfTheLine){
 
 }
 
+TEST(ALGEBRATEST, TestIntersectionLines){
+    double tol=10*numeric_limits<double>::epsilon();
+    //test 1
+    //punti retta 1
+    Vector3d A=Vector3d(0,0,0);
+    Vector3d B=Vector3d(1,0,0);
+    array<Vector3d,2> line1={A,B};
+    //punti retta 2
+    Vector3d C=Vector3d(0,1,0);
+    Vector3d D=Vector3d(0,-1,0);
+    array<Vector3d,2> line2={C,D};
+    Vector3d intersection =intersectionLines(line1,line2);
 
+    EXPECT_TRUE(areVectorsEqual(A,intersection,tol));
 
-
-
-
+    //test 2
+    //punti retta 1
+    A=Vector3d(0,0,0);
+    B=Vector3d(1,1,0);
+    line1={A,B};
+    //punti retta 2
+    C=Vector3d(0,2,0);
+    D=Vector3d(2,0,0);
+    line2={C,D};
+    intersection =intersectionLines(line1,line2);
+    EXPECT_TRUE(areVectorsEqual(Vector3d(1,1,0),intersection,tol));
+}
 
 }
 
@@ -1946,12 +1968,139 @@ TEST(POLYGONTEST,TestMakeCuts){
 
 
 
+TEST(POLYGONTEST,TestCutFractures){
+    //test con il nostro file con casi particolari e onThePlane
+    //controlliamo le fratture più particolari, le altre le abbiamo controllate a mano
+    double tol=10*numeric_limits<double>::epsilon();
+    vector<Fracture> vecFrac;
+    string path="./DFN";
+    readFractures(path+"/FR5_data_prova.txt",vecFrac, tol);
+    vector<Trace> vecTraces={};
+    vecTraces=findTraces(vecFrac,tol);
+    printLocalResults("lresults",vecFrac,vecTraces); //la chiamo perché così ordina le tracce
+    vector<PolygonalMesh> vecMesh = cutFractures(vecFrac, vecTraces,tol);
 
+    EXPECT_EQ(vecMesh[0].numVertices,8);
+    EXPECT_EQ(vecMesh[1].numVertices,3);
+    EXPECT_EQ(vecMesh[2].numVertices,6);
+    EXPECT_EQ(vecMesh[3].numVertices,6);
+    EXPECT_EQ(vecMesh[4].numVertices,6);
 
+    //frattura0, sottopoligono0
+    EXPECT_EQ(vecMesh[0].verticesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[0][1],4);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[0][2],6);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[0][3],7);
 
+    EXPECT_EQ(vecMesh[0].edgesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[0][1],1);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[0][2],2);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[0][3],3);
 
+    //frattura0, sottopoligono1
+    EXPECT_EQ(vecMesh[0].verticesPolygons[1][0],6);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[1][1],5);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[1][2],3);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[1][3],7);
 
+    EXPECT_EQ(vecMesh[0].edgesPolygons[1][0],4);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[1][1],5);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[1][2],6);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[1][3],2);
 
+    //frattura0, sottopoligono2
+    EXPECT_EQ(vecMesh[0].verticesPolygons[2][0],4);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[2][1],1);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[2][2],2);
+    EXPECT_EQ(vecMesh[0].verticesPolygons[2][3],5);
+
+    EXPECT_EQ(vecMesh[0].edgesPolygons[2][0],7);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[2][1],8);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[2][2],9);
+    EXPECT_EQ(vecMesh[0].edgesPolygons[2][3],10);
+
+    //frattura1, sottopoligono0
+    EXPECT_EQ(vecMesh[1].verticesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[1].verticesPolygons[0][1],1);
+    EXPECT_EQ(vecMesh[1].verticesPolygons[0][2],2);
+
+    EXPECT_EQ(vecMesh[1].edgesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[1].edgesPolygons[0][1],1);
+    EXPECT_EQ(vecMesh[1].edgesPolygons[0][2],2);
+
+    //frattura3, sottopoligono0
+    EXPECT_EQ(vecMesh[3].verticesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[0][1],1);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[0][2],4);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[0][3],5);
+
+    EXPECT_EQ(vecMesh[3].edgesPolygons[0][0],0);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[0][1],1);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[0][2],2);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[0][3],3);
+
+    //frattura3, sottopoligono1
+    EXPECT_EQ(vecMesh[3].verticesPolygons[1][0],4);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[1][1],2);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[1][2],3);
+    EXPECT_EQ(vecMesh[3].verticesPolygons[1][3],5);
+
+    EXPECT_EQ(vecMesh[3].edgesPolygons[1][0],4);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[1][1],5);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[1][2],6);
+    EXPECT_EQ(vecMesh[3].edgesPolygons[1][3],2);
+}
+
+TEST(POLYGONTEST,TestAddVerticesOnThePlane){
+
+    double tol=10*numeric_limits<double>::epsilon();
+    queue<Vector3d> subvertices1={};
+    queue<unsigned int> subverticesId1={};
+    list<Vector3d> verticesMesh={};
+    list<unsigned int> idVerticesMesh={};
+    unsigned int countIdV=1;
+    Vector3d p=Vector3d(0,0,0);
+    Vector3d c=Vector3d(5,0,0);
+    Vector3d e0=Vector3d(4,0,0);
+    Vector3d e1=Vector3d(7,0,0);
+
+    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,c,p,e0,e1,tol);
+    EXPECT_TRUE(areVectorsEqual(e0,subvertices1.front(),tol));
+    EXPECT_EQ(countIdV,2);
+
+    subvertices1={};
+    countIdV=1;
+    e1=Vector3d(2,0,0);
+    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,c,p,e0,e1,tol);
+    EXPECT_TRUE(areVectorsEqual(e1,subvertices1.front(),tol));
+    subvertices1.pop();
+    EXPECT_TRUE(areVectorsEqual(e0,subvertices1.front(),tol));
+    EXPECT_EQ(countIdV,3);
+
+    subvertices1={};
+    countIdV=1;
+    e0=Vector3d(0,0,0);
+    e1=Vector3d(7,0,0);
+    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,c,p,e0,e1,tol);
+    EXPECT_EQ(subvertices1.size(),0);
+    EXPECT_EQ(countIdV,1);
+
+    subvertices1={};
+    countIdV=1;
+    e0=Vector3d(-1,0,0);
+    e1=Vector3d(5,0,0);
+    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,c,p,e0,e1,tol);
+    EXPECT_EQ(subvertices1.size(),0);
+    EXPECT_EQ(countIdV,1);
+
+    subvertices1={};
+    countIdV=1;
+    e0=Vector3d(0,0,0);
+    e1=Vector3d(5,0,0);
+    addVerticesOnThePlane(subvertices1,subverticesId1,verticesMesh,idVerticesMesh,countIdV,c,p,e0,e1,tol);
+    EXPECT_EQ(subvertices1.size(),0);
+    EXPECT_EQ(countIdV,1);
+}
 }
 
 

@@ -35,7 +35,6 @@ int main(int argc, char **argv) //passo la tolleranza
     cout<<"Tempo impiegato: "<<duration<<endl;
 
 
-
     return 0;
 }
 
