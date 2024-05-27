@@ -32,7 +32,7 @@ inline bool areVectorsEqual (const Vector3d& v1, const Vector3d&v2, double tol2)
     return false;
 }
 int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);//T
-Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);
+Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2);//T
 }
 
 namespace detail{
@@ -42,13 +42,13 @@ void mergesort(vector<unsigned int>& data, const vector<Trace>& traces); //T
 }
 
 namespace PolygonalMeshLibrary{
-vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);
+vector<PolygonalMesh> cutFractures(vector<Fracture>& fractures, const vector <Trace>& traces, double tol);//T
 void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<reference_wrapper<Trace>>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
               list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
-              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);
+              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);//T
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
-                           Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol);
+                           Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol);//T
 void printPolygonalMesh(vector<PolygonalMesh> &vecMesh, const string& fileName);
 }
 
