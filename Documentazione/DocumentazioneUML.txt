@@ -22,14 +22,16 @@ class Trace
 {
 + idTr: unsigned int
 + extremitiesCoord: array<Vector3d,2>
-+ fracturesIds: array<unsigned int,2>
-+ length: double
++ fracturesIds: array<int,2>
 + Tips: array<bool,2>
++ length: double
 + onThePlane: array<bool,2>
-
++ pending: bool
++ pendingCoord: vector<vector3d>
++ pendingId: vector<unsigned int>
 
 ..Non member functions ..
-+ vector<Trace> findTraces(vector<Fracture>,double)
++ vector<Trace> findTraces(vector<Fracture>&,double)
 + void printGlobalResults(string&,vector<Trace>&)
 ..TRACETEST..
 TestFindTraces
@@ -50,11 +52,12 @@ package Algebra <<Folder>>{
 Class Algebra_functions {
 + Vector3d findPlaneEquation(vector<Vector3d>&,double&)
 + Vector3d intersectionPlaneLine(Vector3d&,double,Vector3d&,Vector3d&)
-+ bool findIntersectionPoints(Fracture&,Fracture&,array<Vector3d,4>&,double,array<bool,2>)
-+ passBoundingBox(Fracture&,Fracture&)
-+ findInternalPoints(array<Vector3d,4>&,double,array<Vector3d,2>&,array<bool,2>&)
-+ bool findSideOfTheLine(Vector3d&,Vector3d&,Vector3d&,double)
-+ Vector3d IntersectionLines(array<Vector3d,2>&,array<vector3d,2>&)
++ bool findIntersectionPoints(Fracture&,Fracture&,array<Vector3d,4>&,double,array<bool,2>&)
++ bool passBoundingBox(Fracture&,Fracture&)
++ bool findInternalPoints(array<Vector3d,4>&,double,array<Vector3d,2>&,array<bool,2>&)
++ inline bool areVectorsEqual(Vector3d&,Vector3d&,double)
++ int findSideOfTheLine(Vector3d&,Vector3d&,Vector3d&,double)
++ Vector3d IntersectionLines(array<Vector3d,2>&,array<Vector3d,2>&)
 
 ..ALGEBRATEST..
 TestFindPlaneEquation
@@ -78,7 +81,7 @@ Class detail_functions {
 + void mergesort(vector<unsigned int>&,vector<Trace>&,size_t,size_t)
 + void mergesort(vector<unsigned int>&,vector<Trace>&)
 ..DETAILTEST..
-TestMergesort
+TestMergeSort
 
 }
 detail_functions..> Trace
@@ -102,7 +105,7 @@ Class PolygonalMesh{
 + vector<PolygonalMesh> cutFractures(vector<Fracture>&,vector<Trace>&,double)
 + void makeCuts(queue<Vector3d>&,queue<unsigned int>&,list<reference_wrapper<Trace>>&,double,PolygonalMesh&,
 unsigned int&,unsigned int&,list<Vector3d>&,list<unsigned int>&,list<array<unsigned int,2>>&,list<unsigned int>&,int,Vector3d&,map<array<unsigned int,2>,unisgned int>&)
-+ void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,Vector3d,Vector3d,Vector3d,Vector3d,double)
++ void addVerticesOnThePlane(queue<Vector3d>&,queue<unsigned int>&,list<Vector3d>&,list<unsigned int>&,unsigned int&,Vector3d&,Vector3d&,Vector3d&,Vector3d&,double)
 + void printPolygonalMesh(vector<PoygonalMesh>&,string&)
 
 ..POLYGONTEST..
