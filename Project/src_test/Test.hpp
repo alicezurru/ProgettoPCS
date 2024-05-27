@@ -18,7 +18,6 @@ namespace Geometry {
 
 TEST(FRACTURESTEST, TestReadFractures){
     //test per la lettura da file
-    //bool readFractures(const string& fileName, vector<Fracture>& vec, double tol);
     double tol=10*numeric_limits<double>::epsilon();
     vector<Fracture> vec;
     string path="./DFN";
@@ -48,7 +47,7 @@ TEST(FRACTURETEST, TestFindTraces){
     EXPECT_EQ(vecTraces[1].Tips, traces_ok);
     EXPECT_EQ(vecTraces[2].Tips, traces_ok);
     EXPECT_EQ(vecTraces[3].Tips, traces_ok);
-    //così controlliamo i tips. Le estremità le avevamo già controllate in TestFindIntersectionPoints e TestFindInternalPoints
+    //così controlliamo i tips. Le estremità le controlliamo in TestFindIntersectionPoints e TestFindInternalPoints
     //abbiamo comunque controllato a mano che fossero giuste.
 
 }
@@ -72,7 +71,6 @@ TEST(ALGEBRATEST, TestFindPlaneEquation){
 
 }
 
-//Vector3d intersectionPlaneLine(const Vector3d& coeff, const double d, const Vector3d& p1, const Vector3d& p2);
 TEST(ALGEBRATEST, TestIntersectionPlaneLine){//non testo casi particolari come retta contenuta nel piano o assenza di intersezione perchè nel
     //programma si controlla e si fa in modo non vengano passati alla funzione questi casi
     Vector3d coeff = {1.0, -1.0, 1.0};
@@ -83,7 +81,7 @@ TEST(ALGEBRATEST, TestIntersectionPlaneLine){//non testo casi particolari come r
     EXPECT_EQ(intersection, Vector3d(0,1,0));
 
 }
-//bool findIntersectionPoints(Fracture& f1, Fracture& f2, array<Vector3d,4>& intPoints, double tol, array<bool,2> onThePlane);
+
 TEST(ALGEBRATEST, TestFindIntersectionPoints){
     double tol=10*numeric_limits<double>::epsilon();
     //testo un caso in cui so che c'è intersezione
@@ -161,7 +159,6 @@ TEST(ALGEBRATEST, TestPassBoundingBox){
 TEST(ALGEBRATEST, TestFindInternalPoints){
     //testo un caso in cui non c'è intersezione ma i piani non sono paralleli
     double tol=10*numeric_limits<double>::epsilon();
-    double tol2=max(10*numeric_limits<double>::epsilon(), tol*tol);
     Fracture f1;
     f1.numVertices=4;
     f1.vertices={Vector3d(0,0,0),Vector3d(2,0,0),Vector3d(2,0,1),Vector3d(0,0,1)};
@@ -169,8 +166,7 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     f2.numVertices=4;
     f2.vertices={Vector3d(3,-0.5,0.5),Vector3d(5,-0.5,0.5),Vector3d(5,0.5,0.5),Vector3d(3,0.5,0.5)};
     array<bool,2> onThePlane = {false, false}; //nessuno dei vertici sta sul piano dell'altra frattura
-    //DOMANDA: devo usare findIntersectionPoints per trovarla??
-    array<Vector3d,4> intPoints; //= {Vector3d(0,0,0.5), Vector3d(2,0,0.5), Vector3d(3,0,0.5), Vector3d(5,0,0.5)};
+    array<Vector3d,4> intPoints;
     findIntersectionPoints(f1, f2, intPoints, tol, onThePlane);
     array<Vector3d, 2> extremities;
     array<bool, 2> tips;
@@ -234,7 +230,6 @@ TEST(ALGEBRATEST, TestFindInternalPoints){
     EXPECT_FALSE(intersection);
 }
 
-//int findSideOfTheLine (const Vector3d &vecLine, const Vector3d &vecToTest, const Vector3d &n, double tol);
 TEST(ALGEBRATEST, TestFindSideOfTheLine){
     //caso base
     double tol=10*numeric_limits<double>::epsilon();
@@ -272,7 +267,6 @@ TEST(ALGEBRATEST, TestIntersectionLines){
     Vector3d D=Vector3d(0,-1,0);
     array<Vector3d,2> line2={C,D};
     Vector3d intersection =intersectionLines(line1,line2);
-
     EXPECT_TRUE(areVectorsEqual(A,intersection,tol));
 
     //test 2
@@ -329,10 +323,6 @@ TEST(SORTINGTEST, TestMergeSort){
 }
 
 namespace PolygonalMeshLibrary{
-
-/*void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, queue<Trace>& traces, double tol, PolygonalMesh& mesh, unsigned int& countIdV, unsigned int& countIdE,
-              list<Vector3d>& verticesMesh, list<unsigned int>& idVerticesMesh,
-              list<array<unsigned int,2>>& edgesMesh,list<unsigned int>& idEdgesMesh, int idFrac, Vector3d& n,map<array<unsigned int,2>,unsigned int>& mapEdges);*/
 
 TEST(POLYGONTEST,TestMakeCuts){
 
@@ -2102,6 +2092,5 @@ TEST(POLYGONTEST,TestAddVerticesOnThePlane){
     EXPECT_EQ(countIdV,1);
 }
 }
-
 
 #endif

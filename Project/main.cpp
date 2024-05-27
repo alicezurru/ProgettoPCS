@@ -17,7 +17,7 @@ int main(int argc, char **argv) //passo la tolleranza
     double tol=max(10*numeric_limits<double>::epsilon(), tolInput);
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR50_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR200_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }

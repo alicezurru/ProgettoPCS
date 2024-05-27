@@ -1,8 +1,6 @@
 #ifndef Fractures_H
 #define Fractures_H
 
-
-
 #include <Eigen/Eigen>
 #include <vector>
 #include <array>
@@ -18,8 +16,6 @@ struct Fracture{
     vector <Vector3d> vertices={}; //vettore con le coordinate dei vertici della frattura
     vector <unsigned int> passingTraces={}; //vettore con gli id delle tracce passanti per la frattura corrente
     vector <unsigned int> notPassingTraces={};
-
-    Fracture()=default; //default
 
 };
 

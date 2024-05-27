@@ -1120,7 +1120,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
 
 void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& subverticesId1,list<Vector3d>& verticesMesh,
                            list<unsigned int>& idVerticesMesh,unsigned int& countIdV,
-                           Vector3d c, Vector3d p, Vector3d e0, Vector3d e1, double tol){
+                           Vector3d& c, Vector3d& p, Vector3d& e0, Vector3d& e1, double tol){
     double tol2d=max(tol, 10*numeric_limits<double>::epsilon());
     //distinguo le posizioni reciproche di p(previous), c(current), e0(estremità 0 traccia), e1(estremità 1)
     //e inserisco e0 e/o e1 tra i vertici se questi cadono all'interno del lato (nell'ordine corretto per mantenere l'ordinamento antiorario)
