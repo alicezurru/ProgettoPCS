@@ -52,4 +52,9 @@ void addVerticesOnThePlane(queue<Vector3d>& subvertices1, queue<unsigned int>& s
 void printPolygonalMesh(vector<PolygonalMesh> &vecMesh, const string& fileName);
 }
 
+
+namespace Export{
+void exportMesh(Fracture& F, vector<PolygonalMeshLibrary::PolygonalMesh>& meshes);
+}
+
 #endif
