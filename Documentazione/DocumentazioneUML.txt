@@ -113,4 +113,11 @@ TestAddVerticesOnThePlane
 }
 
 PolygonalMesh "1"--o "1" Fracture :cut
+
+package Export <<Folder>>{
+Class Export_functions{
++ void exportMesh(Fracture&,vector<PolygonalMesh>&)
+}
+}
+
 @enduml
