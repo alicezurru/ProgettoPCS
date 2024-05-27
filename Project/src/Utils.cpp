@@ -1,6 +1,7 @@
 #include "Fractures.hpp"
 #include "Utils.hpp"
 #include "PolygonalMesh.hpp"
+#include "UCDUtilities.hpp"
 
 #include<iostream>
 #include<sstream>
@@ -1328,6 +1329,37 @@ void printPolygonalMesh(vector<PolygonalMesh>& vecMesh, const string& fileName){
         }
     }
     ofstr.close();
+}
+}
+
+namespace Export{
+void exportMesh(Fracture& F, vector<PolygonalMesh>& meshes){
+    int numCols = meshes[F.idFrac].numVertices;
+    //i punti sulle colonne
+
+    // Creo la matrice di dimensioni 3xNumCols
+    MatrixXd matrix(3, numCols);
+
+    for (unsigned int i = 0; i < numCols; ++i) {
+        matrix.col(i) = meshes[F.idFrac].coordVertices[i];
+    }
+
+    Gedim::UCDUtilities U;
+    string fileName = "./DFN/ExportMeshVertices.inp";
+    U.ExportPoints( fileName, matrix,{},{});
+
+
+    int numCols2 = meshes[F.idFrac].numEdges;
+
+    // Crea la matrice di dimensioni 2xNumCols
+    MatrixXi matrix2(2, numCols2);
+
+    for (int i = 0; i < numCols2; ++i) {
+        matrix2.col(i) = Vector2i(meshes[F.idFrac].extremitiesEdges[i][0],meshes[F.idFrac].extremitiesEdges[i][1]);
+    }
+    string fileName1 = "./DFN/ExportMeshEdges.inp";
+    U.ExportSegments( fileName1, matrix,matrix2);
+
 }
 }
 
