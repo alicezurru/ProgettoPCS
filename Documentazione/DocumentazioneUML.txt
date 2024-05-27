@@ -118,6 +118,6 @@ package Export <<Folder>>{
 Class Export_functions{
 + void exportMesh(Fracture&,vector<PolygonalMesh>&)
 }
+Export_functions ..> Gedim
 }
-
 @enduml
