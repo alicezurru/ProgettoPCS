@@ -65,14 +65,16 @@ bool readFractures(const string& fileName, vector<Fracture>& vec, double tol){
         for (unsigned int k=0; k<frac.numVertices-1; k++){ //controllo che non ci siano lati di lunghezza nulla.
             //In questo caso tolgo la frattura e metto nel vettore una frattura con id -1
             Vector3d edge = (frac.vertices)[k]-(frac.vertices)[k+1]; //differenza tra due vertici consecutivi
-            if (edge[0]*edge[0]+edge[1]*edge[1]+edge[2]*edge[2]<tol*tol){//distanza al quadrato in modo da non dover valutare la radice quadrata
+            double tol2=max(10*numeric_limits<double>::epsilon(), tol*tol);
+            if (edge.squaredNorm()<tol2){//distanza al quadrato in modo da non dover valutare la radice quadrata
                 cerr << "la frattura " << frac.idFrac << " ha lati di lunghezza nulla" << endl;
                 frac.idFrac=-1; //come se fosse null
                 break;
             }
         }
         Vector3d edgeF = (frac.vertices)[0]-(frac.vertices)[frac.numVertices-1]; //faccio lo stesso per il primo e l'ultimo vertice
-        if (edgeF[0]*edgeF[0]+edgeF[1]*edgeF[1]+edgeF[2]*edgeF[2]<tol*tol){
+        double tol2=max(10*numeric_limits<double>::epsilon(), tol*tol);
+        if (edgeF.squaredNorm()<tol2){
             cerr << "la frattura " << frac.idFrac << " ha lati di lunghezza nulla" << endl;
             frac.idFrac=-1;
         }
