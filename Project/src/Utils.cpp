@@ -800,7 +800,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
                         for(unsigned int i=0;i<traces.front().get().pendingCoord.size();i++){
                             if(areVectorsEqual(intersection,traces.front().get().pendingCoord[i],tol2)){
                                 alreadyDone=i;
-
+                                break;
                             }
                         }
                     }
