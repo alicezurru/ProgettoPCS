@@ -20,7 +20,7 @@ int main()
     chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
     vector<Fracture> vec;
     string path="./DFN";
-    bool flag=readFractures(path+"/FR10_data.txt",vec, tol);
+    bool flag=readFractures(path+"/FR200_data.txt",vec, tol);
     if (!flag){ //ci son stati problemi nella lettura file
         return 1;
     }
