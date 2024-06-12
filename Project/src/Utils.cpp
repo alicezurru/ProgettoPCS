@@ -582,6 +582,8 @@ int findSideOfTheLine (const Vector3d& vecLine,const Vector3d& vecToTest,const V
 
 Vector3d intersectionLines(array<Vector3d,2>& line1, array<Vector3d,2>& line2){
    //r: p=p1+t(p2-p1)
+    //s: p=q1+t(q2-q1) sottraggo
+    //t(p2-p1)-t(q2-q1)=q1-p1
     //[V1|V2](t1;t2)=(P2-P1)
     MatrixXd M(3, 2);
     M.col(0)=line1[1]-line1[0];
@@ -825,6 +827,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
                     if(first==-1){//aggiungo qui i nuovi vertici nel caso in cui first==-1 perché mi serve sapere se ho "cambiato
                         //lato della traccia" o no (gli altri casi li tratto dopo)
                         //sono nel caso in cui ho cambiato lato
+                        //se first !=-1 lo faccio alla fine perchè tanto devo farlo in ogni caso
                         if(previousSide1){
                             subvertices2.push(v);
                             subverticesId2.push(verticesId.front());
@@ -864,7 +867,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
                 //controllo da che parte sta il vertice corrente (se dalla stessa del primo o dall'altra) e lo salvo nella lista di subvertices corrispondente
                 //questo va fatto in entrambi i casi (sia current == previous sia !=)
                 //il caso current==-1 l'ho già trattato e anche quello first==-1
-                if(current==first && current !=-1){
+                if(current==first && first !=-1){
                     //vertici
                     subvertices1.push(v);
                     subverticesId1.push(verticesId.front());
@@ -1014,10 +1017,6 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
             if(subvertices1.size()>0){
             makeCuts(subvertices1,subverticesId1,subtraces1,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
             }
-            queue<Vector3d> copia(subvertices2);
-            for (unsigned int i=0;i<subvertices2.size();i++){
-                copia.pop();
-            }
             if(subvertices2.size()>0){
             makeCuts(subvertices2,subverticesId2,subtraces2,tol,mesh,countIdV,countIdE,verticesMesh,idVerticesMesh,edgesMesh,idEdgesMesh,idFrac,n,mapEdges);
             }
@@ -1036,8 +1035,7 @@ void makeCuts (queue<Vector3d>& vertices, queue<unsigned int>& verticesId, list<
                     subvertices1.push(v);
                     subverticesId1.push(verticesId.front());
                 }
-                else{
-
+                else{//tutti gli altri casi sono classici e aggiungo dalla prima parte (l'unica)
                     subvertices1.push(v);
                     subverticesId1.push(verticesId.front());
                 }
